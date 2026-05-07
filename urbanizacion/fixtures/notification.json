@@ -1,0 +1,45 @@
+[
+ {
+  "attach_files": "From Field",
+  "attach_print": 0,
+  "channel": "Email",
+  "condition": "",
+  "date_changed": null,
+  "days_in_advance": 0,
+  "docstatus": 0,
+  "doctype": "Notification",
+  "document_type": "CartaReserva",
+  "enabled": 1,
+  "event": "Save",
+  "from_attach_field": "comprobante_de_pago",
+  "is_standard": 0,
+  "message": "<h3>Nueva Carta de Reserva</h3>\r\n\r\n<p><strong>N° Reserva:</strong> {{ doc.name }}</p>\r\n<p><strong>Fecha:</strong> {{ doc.fecha }}</p>\r\n<p><strong>Vendedor:</strong> {{ doc.vendedor }}</p>\r\n\r\n<h4>Datos del Lote</h4>\r\n<p><strong>Proyecto:</strong> {{ doc.proyecto }}</p>\r\n<p><strong>Lote:</strong> {{ doc.lote }}</p>\r\n<p><strong>Modelo:</strong> {{ doc.catalogo_modelos }}</p>\r\n\r\n<h4>Datos del Comprador</h4>\r\n<p><strong>Nombre:</strong> {{ doc.nombre_solicitante }}</p>\r\n<p><strong>Cédula:</strong> {{ doc.numero_identificacion }}</p>\r\n<p><strong>Teléfono:</strong> {{ doc.telefono }}</p>\r\n<p><strong>Correo:</strong> {{ doc.correo }}</p>\r\n\r\n<h4>Datos Financieros</h4>\r\n<p><strong>Precio Total:</strong> U$ {{ \"%.2f\" | format(doc.precio_total) }}</p>\r\n<p><strong>Prima:</strong> U$ {{ \"%.2f\" | format(doc.monto_prima) }}</p>\r\n<p><strong>Monto Reserva:</strong> U$ {{ \"%.2f\" | format(doc.monto_reservacion) }}</p>\r\n<p><strong>Monto a Financiar:</strong> U$ {{ \"%.2f\" | format(doc.monto_financiar) }}</p>\r\n{% if doc.descuento %}<p><strong>Descuento aplicado:</strong> U$ {{ \"%.2f\" | format(doc.descuento) }}</p>{% endif %}\r\n<p><strong>Banco:</strong> {{ doc.banco }}</p>",
+  "message_type": "Markdown",
+  "method": null,
+  "modified": "2026-04-27 16:49:58.452697",
+  "module": "Urbanizacion",
+  "name": "Nueva Carta de Reserva",
+  "print_format": null,
+  "property_value": null,
+  "recipients": [
+   {
+    "bcc": null,
+    "cc": "",
+    "condition": "doc.estado == \"Activa\"",
+    "parent": "Nueva Carta de Reserva",
+    "parentfield": "recipients",
+    "parenttype": "Notification",
+    "receiver_by_document_field": null,
+    "receiver_by_role": "Agente_de_Ventas"
+   }
+  ],
+  "send_system_notification": 1,
+  "send_to_all_assignees": 0,
+  "sender": "BEL-TESTING-ERP",
+  "sender_email": "sistemaerp@gicosa.inversionesbel.com",
+  "set_property_after_alert": null,
+  "slack_webhook_url": null,
+  "subject": "Nueva Reserva: {{ doc.name }} - {{ doc.lote }}",
+  "value_changed": null
+ }
+]

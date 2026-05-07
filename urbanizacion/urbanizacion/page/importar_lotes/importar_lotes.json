@@ -1,0 +1,26 @@
+{
+ "content": null,
+ "docstatus": 0,
+ "doctype": "Page",
+ "module": "Urbanizacion",
+ "name": "importar-lotes",
+ "page_name": "importar-lotes",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Urbanizacion Manager"
+  },
+  {
+   "role": "Urbanizacion Operador"
+  },
+  {
+   "role": "Urbanizacion Vendedor"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "title": "Importar Lotes"
+}
