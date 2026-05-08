@@ -1,0 +1,36 @@
+{
+ "actions": [],
+ "creation": "2026-05-07 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": ["ambiente", "cantidad"],
+ "fields": [
+  {
+   "columns": 4,
+   "fieldname": "ambiente",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Ambiente",
+   "reqd": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "cantidad",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Cantidad"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-05-07 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Urbanizacion",
+ "name": "urbAmbiente",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
