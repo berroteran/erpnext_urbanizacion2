@@ -17385,5 +17385,77 @@
   "track_views": 0,
   "translated_doctype": 0,
   "website_search_field": null
+ },
+ {
+  "doctype": "DocType",
+  "name": "urbDesembolso",
+  "module": "Urbanizacion",
+  "istable": 1,
+  "editable_grid": 1,
+  "fields": [
+   {
+    "fieldname": "porcentaje",
+    "fieldtype": "Float",
+    "label": "Porcentaje (%)",
+    "in_list_view": 1,
+    "columns": 2
+   },
+   {
+    "fieldname": "monto",
+    "fieldtype": "Currency",
+    "label": "Monto",
+    "in_list_view": 1,
+    "read_only": 1,
+    "columns": 2
+   },
+   {
+    "fieldname": "estado",
+    "fieldtype": "Select",
+    "label": "Estado",
+    "options": "Pendiente\nProgramado\nRealizado",
+    "in_list_view": 1,
+    "columns": 2
+   },
+   {
+    "fieldname": "realizado",
+    "fieldtype": "Check",
+    "label": "Realizado",
+    "in_list_view": 1,
+    "columns": 1
+   },
+   {
+    "fieldname": "fecha_realizado",
+    "fieldtype": "Date",
+    "label": "Fecha Realizado",
+    "in_list_view": 1,
+    "columns": 2
+   }
+  ],
+  "permissions": []
+ },
+ {
+  "doctype": "DocType",
+  "name": "urbAmbiente",
+  "module": "Urbanizacion",
+  "istable": 1,
+  "editable_grid": 1,
+  "fields": [
+   {
+    "fieldname": "ambiente",
+    "fieldtype": "Data",
+    "label": "Ambiente",
+    "in_list_view": 1,
+    "columns": 4,
+    "reqd": 1
+   },
+   {
+    "fieldname": "cantidad",
+    "fieldtype": "Int",
+    "label": "Cantidad",
+    "in_list_view": 1,
+    "columns": 2
+   }
+  ],
+  "permissions": []
  }
 ]
