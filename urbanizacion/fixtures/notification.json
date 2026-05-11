@@ -16,7 +16,7 @@
   "message": "<h3>Nueva Carta de Reserva</h3>\r\n\r\n<p><strong>N° Reserva:</strong> {{ doc.name }}</p>\r\n<p><strong>Fecha:</strong> {{ doc.fecha }}</p>\r\n<p><strong>Vendedor:</strong> {{ doc.vendedor }}</p>\r\n\r\n<h4>Datos del Lote</h4>\r\n<p><strong>Proyecto:</strong> {{ doc.proyecto }}</p>\r\n<p><strong>Lote:</strong> {{ doc.lote }}</p>\r\n<p><strong>Modelo:</strong> {{ doc.catalogo_modelos }}</p>\r\n\r\n<h4>Datos del Comprador</h4>\r\n<p><strong>Nombre:</strong> {{ doc.nombre_solicitante }}</p>\r\n<p><strong>Cédula:</strong> {{ doc.numero_identificacion }}</p>\r\n<p><strong>Teléfono:</strong> {{ doc.telefono }}</p>\r\n<p><strong>Correo:</strong> {{ doc.correo }}</p>\r\n\r\n<h4>Datos Financieros</h4>\r\n<p><strong>Precio Total:</strong> U$ {{ \"%.2f\" | format(doc.precio_total) }}</p>\r\n<p><strong>Prima:</strong> U$ {{ \"%.2f\" | format(doc.monto_prima) }}</p>\r\n<p><strong>Monto Reserva:</strong> U$ {{ \"%.2f\" | format(doc.monto_reservacion) }}</p>\r\n<p><strong>Monto a Financiar:</strong> U$ {{ \"%.2f\" | format(doc.monto_financiar) }}</p>\r\n{% if doc.descuento %}<p><strong>Descuento aplicado:</strong> U$ {{ \"%.2f\" | format(doc.descuento) }}</p>{% endif %}\r\n<p><strong>Banco:</strong> {{ doc.banco }}</p>",
   "message_type": "Markdown",
   "method": null,
-  "modified": "2026-04-27 16:49:58.452697",
+  "modified": "2026-05-11 16:19:14.368613",
   "module": "Urbanizacion",
   "name": "Nueva Carta de Reserva",
   "print_format": null,
