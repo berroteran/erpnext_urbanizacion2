@@ -8,7 +8,7 @@
   "for_user": null,
   "hide_custom": 1,
   "icon": "home",
-  "indicator_color": "green",
+  "indicator_color": "cyan",
   "is_hidden": 0,
   "label": "Urbanizacion",
   "links": [
@@ -373,7 +373,7 @@
     "type": "Link"
    }
   ],
-  "modified": "2026-05-07 18:31:12.222487",
+  "modified": "2026-05-07 18:51:16.910952",
   "module": "Urbanizacion",
   "name": "Urbanizacion",
   "number_cards": [],
