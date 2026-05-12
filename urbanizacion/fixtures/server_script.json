@@ -15,7 +15,7 @@
   "rate_limit_count": 5,
   "rate_limit_seconds": 86400,
   "reference_doctype": "Adendum",
-  "script": "if doc.tipo == \"Proforma\" and doc.contrato:\n    carta = frappe.db.get_value(\"ContratoVenta\", doc.contrato, \"carta_reserva\")\n    if carta:\n        precio_original = frappe.db.get_value(\"CartaReserva\", carta, \"precio_total\")\n        if precio_original:\n            monto_prima = frappe.db.get_value(\"ContratoVenta\", doc.contrato, \"monto_prima\") or 0\n            frappe.db.set_value(\"ContratoVenta\", doc.contrato, \"precio_total\", precio_original)\n            frappe.db.set_value(\"ContratoVenta\", doc.contrato, \"monto_financiar\", precio_original - monto_prima)",
+  "script": "if doc.tipo == \"Proforma\" and doc.contrato:\n    carta = frappe.db.get_value(\"ContratoVenta\", doc.contrato, \"carta_reserva\")\n    if carta:\n        precio_original = frappe.db.get_value(\"CartaReserva\", carta, \"precio_total\")\n        if precio_original:\n            monto_prima = frappe.db.get_value(\"ContratoVenta\", doc.contrato, \"monto_prima\") or 0\n            frappe.db.set_value(\"ContratoVenta\", doc.contrato, \"precio_total\", precio_original)\n            frappe.db.set_value(\"ContratoVenta\", doc.contrato, \"monto_financiar\", float(precio_original) - float(monto_prima))",
   "script_type": "DocType Event"
  },
  {
