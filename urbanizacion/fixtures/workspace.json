@@ -7,8 +7,8 @@
   "doctype": "Workspace",
   "for_user": null,
   "hide_custom": 1,
-  "icon": null,
-  "indicator_color": "green",
+  "icon": "home",
+  "indicator_color": "cyan",
   "is_hidden": 0,
   "label": "Urbanizacion",
   "links": [
@@ -180,7 +180,7 @@
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
-    "label": "SeguimientoObra",
+    "label": "Seguimiento de Obra",
     "link_count": 0,
     "link_to": "SeguimientoObra",
     "link_type": "DocType",
@@ -306,7 +306,7 @@
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
-    "label": "Lote",
+    "label": "Lotes",
     "link_count": 0,
     "link_to": "Lotes",
     "link_type": "DocType",
@@ -373,7 +373,7 @@
     "type": "Link"
    }
   ],
-  "modified": "2026-05-07 12:03:27.402224",
+  "modified": "2026-05-07 18:51:16.910952",
   "module": "Urbanizacion",
   "name": "Urbanizacion",
   "number_cards": [],
