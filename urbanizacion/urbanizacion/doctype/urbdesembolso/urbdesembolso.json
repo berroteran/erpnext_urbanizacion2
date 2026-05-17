@@ -1,0 +1,58 @@
+{
+ "actions": [],
+ "creation": "2026-05-07 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": ["porcentaje", "monto", "estado", "realizado", "fecha_realizado"],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "porcentaje",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Porcentaje (%)"
+  },
+  {
+   "columns": 2,
+   "fieldname": "monto",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Monto",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "estado",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Estado",
+   "options": "Pendiente\nProgramado\nRealizado"
+  },
+  {
+   "columns": 1,
+   "fieldname": "realizado",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Realizado"
+  },
+  {
+   "columns": 2,
+   "fieldname": "fecha_realizado",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Fecha Realizado"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-05-07 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Urbanizacion",
+ "name": "urbDesembolso",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
