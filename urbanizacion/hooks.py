@@ -266,3 +266,5 @@ override_doctype_dashboards = {
 	"Proyectos": "urbanizacion.urbanizacion.dashboard.proyectos_dashboard.get_data",
 	"Lotes": "urbanizacion.urbanizacion.dashboard.lotes_dashboard.get_data",
 }
+
+after_migrate = ["urbanizacion.urbanizacion.doctype_link_guard.after_migrate"]
