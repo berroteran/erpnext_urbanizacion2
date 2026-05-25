@@ -6,7 +6,7 @@ app_email = "soporte@inversionesbel.com"
 app_license = "mit"
 
 fixtures = [
-	{"dt": "DocType", "filters": [["module", "=", "Urbanizacion"]]},
+	{"dt": "DocType", "filters": [["module", "=", "Urbanizacion"], ["custom", "=", 1]]},
 	{"dt": "Workspace", "filters": [["module", "=", "Urbanizacion"]]},
 	{"dt": "Client Script", "filters": [["dt", "in", ["Proyectos","CatalogoModelos","ContratoVenta","CartaReserva","Lotes","Adendum","AdendumExtra","ActividadObra","FotoAvance","SeguimientoObra","CambioLote"]]]},
 	{"dt": "Server Script", "filters": [["reference_doctype", "in", ["Proyectos","CatalogoModelos","ContratoVenta","CartaReserva","Lotes","Adendum","AdendumExtra","ActividadObra","FotoAvance","SeguimientoObra","CambioLote"]]]},
@@ -14,7 +14,6 @@ fixtures = [
 	{"dt": "Workflow", "filters": [["document_type", "in", ["Proyectos","CatalogoModelos","ContratoVenta","CartaReserva","Lotes","Adendum","AdendumExtra","ActividadObra","FotoAvance","SeguimientoObra","CambioLote"]]]},
 	{"dt": "Notification", "filters": [["document_type", "in", ["Proyectos","CatalogoModelos","ContratoVenta","CartaReserva","Lotes","Adendum","AdendumExtra","ActividadObra","FotoAvance","SeguimientoObra","CambioLote"]]]},
 	{"dt": "Print Format", "filters": [["doc_type", "in", ["Proyectos","CatalogoModelos","ContratoVenta","CartaReserva","Lotes","Adendum","AdendumExtra","ActividadObra","FotoAvance","SeguimientoObra","CambioLote"]]]},
-	{"dt": "DocType Link", "filters": [["parent", "in", ["Proyectos", "Lotes"]]]},
 	{"dt": "Web Page", "filters": [["name", "=", "importar-lotes"]]},
 	{"dt": "Role", "filters": [["name", "in", ["Urbanizacion Manager", "Urbanizacion Operador", "Urbanizacion Consulta", "Urbanizacion Vendedor", "Urbanizacion Tecnico"]]]},
 ]

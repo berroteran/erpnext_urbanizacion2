@@ -5,33 +5,30 @@ UNIQUE_INDEX_NAME = "uniq_parent_group_link_field"
 
 def deduplicate_doctype_link_rows() -> int:
     """Remove duplicate DocType Link rows, keeping one row per logical key."""
-    before = frappe.db.count("DocType Link")
-
-    frappe.db.sql(
-        """
-        create temporary table if not exists tmp_doctype_link_keep (
-            name varchar(140) primary key
-        ) engine=InnoDB
-        """
-    )
-    frappe.db.sql("truncate table tmp_doctype_link_keep")
-    frappe.db.sql(
-        """
-        insert into tmp_doctype_link_keep (name)
-        select min(name) as name
-        from `tabDocType Link`
-        group by parent, `group`, link_doctype, link_fieldname
-        """
-    )
-    frappe.db.sql(
-        """
-        delete from `tabDocType Link`
-        where name not in (select name from tmp_doctype_link_keep)
-        """
+    rows = frappe.db.get_all(
+        "DocType Link",
+        fields=["name", "parent", "group", "link_doctype", "link_fieldname"],
+        order_by="parent asc, `group` asc, link_doctype asc, link_fieldname asc, name asc",
     )
 
-    after = frappe.db.count("DocType Link")
-    return max(before - after, 0)
+    seen = set()
+    remove_names = []
+    for row in rows:
+        key = (
+            row.parent,
+            row.group,
+            row.link_doctype,
+            row.link_fieldname or "",
+        )
+        if key in seen:
+            remove_names.append(row.name)
+        else:
+            seen.add(key)
+
+    for name in remove_names:
+        frappe.delete_doc("DocType Link", name, ignore_permissions=True, force=True)
+
+    return len(remove_names)
 
 
 def has_unique_index() -> bool:
