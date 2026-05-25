@@ -242,30 +242,6 @@
     "parent": "Urbanizacion",
     "parentfield": "roles",
     "parenttype": "Workspace",
-    "role": "All"
-   },
-   {
-    "parent": "Urbanizacion",
-    "parentfield": "roles",
-    "parenttype": "Workspace",
-    "role": "Vendedor"
-   },
-   {
-    "parent": "Urbanizacion",
-    "parentfield": "roles",
-    "parenttype": "Workspace",
-    "role": "Agente_de_Ventas"
-   },
-   {
-    "parent": "Urbanizacion",
-    "parentfield": "roles",
-    "parenttype": "Workspace",
-    "role": "catalogo_modelos"
-   },
-   {
-    "parent": "Urbanizacion",
-    "parentfield": "roles",
-    "parenttype": "Workspace",
     "role": "Urbanizacion Manager"
    },
    {
@@ -285,6 +261,12 @@
     "parentfield": "roles",
     "parenttype": "Workspace",
     "role": "Urbanizacion Vendedor"
+   },
+   {
+    "parent": "Urbanizacion",
+    "parentfield": "roles",
+    "parenttype": "Workspace",
+    "role": "Urbanizacion Tecnico"
    }
   ],
   "sequence_id": 0.0,
