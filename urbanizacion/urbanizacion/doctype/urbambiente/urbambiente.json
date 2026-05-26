@@ -17,7 +17,7 @@
   {
    "columns": 2,
    "fieldname": "cantidad",
-   "fieldtype": "Int",
+   "fieldtype": "Float",
    "in_list_view": 1,
    "label": "Cantidad"
   }
