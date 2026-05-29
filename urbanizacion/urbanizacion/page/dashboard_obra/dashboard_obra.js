@@ -283,7 +283,7 @@ frappe.pages["dashboard-obra"].on_page_load = function (wrapper) {
     }
 
     function apply_lot_filter(f) {
-        $(".ob-lot").each(function () {
+        $("#ob-mosaic .ob-lot").each(function () {
             $(this).toggleClass("dimmed", f !== "all" && $(this).data("status") !== f);
         });
     }
