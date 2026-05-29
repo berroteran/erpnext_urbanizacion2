@@ -173,6 +173,16 @@ frappe.pages["dashboard-obra"].on_page_load = function (wrapper) {
     let _current_filter = "all";
     let _current_data = [];
 
+    // ── Click en lote (bind único para evitar apilamiento entre reloads) ─
+    $("#ob-mosaic").on("click", ".ob-lot", function () {
+        const row = _current_data.find(r => r.lote === $(this).data("lote"));
+        if (row) {
+            $(".ob-lot.selected").removeClass("selected");
+            $(this).addClass("selected");
+            render_detail(row);
+        }
+    });
+
     // ── Filtros mosaico ───────────────────────────────────────────────
     $("#ob-filters").on("click", "button", function () {
         _current_filter = $(this).data("f");
@@ -259,14 +269,6 @@ frappe.pages["dashboard-obra"].on_page_load = function (wrapper) {
         });
         $("#ob-mosaic").html(html);
 
-        $("#ob-mosaic").on("click", ".ob-lot", function () {
-            const row = _current_data.find(r => r.lote === $(this).data("lote"));
-            if (row) {
-                $(".ob-lot.selected").removeClass("selected");
-                $(this).addClass("selected");
-                render_detail(row);
-            }
-        });
         apply_lot_filter(_current_filter);
     }
 
@@ -427,8 +429,9 @@ frappe.pages["dashboard-obra"].on_page_load = function (wrapper) {
         if (a_tiempo + desfase > 0) {
             const pct_t = Math.round(a_tiempo / (a_tiempo + desfase) * 100);
             // Mostrar stats sobre el gráfico via HTML para evitar truncamiento de leyenda
+            $("#ob-exito-stats").remove();
             $("#chart-exito").before(`
-                <div style="display:flex;gap:20px;justify-content:center;margin-bottom:8px;font-size:13px">
+                <div id="ob-exito-stats" style="display:flex;gap:20px;justify-content:center;margin-bottom:8px;font-size:13px">
                     <span style="color:#16a34a;font-weight:700">&#9632; A Tiempo: ${a_tiempo} (${pct_t}%)</span>
                     <span style="color:#dc2626;font-weight:700">&#9632; Con Desfase: ${desfase} (${100-pct_t}%)</span>
                 </div>
