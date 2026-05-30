@@ -27,7 +27,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Estado",
-   "options": "Pendiente\nProgramado\nRealizado"
+   "options": "Pendiente\nPor Solicitar\nProgramado\nRealizado"
   },
   {
    "columns": 1,

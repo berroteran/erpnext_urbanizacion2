@@ -4,3 +4,4 @@ __pycache__/
 *.swp
 .DS_Store
 node_modules/
+seed_*.py
