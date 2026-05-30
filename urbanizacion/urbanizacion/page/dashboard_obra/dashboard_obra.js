@@ -172,6 +172,7 @@ frappe.pages["dashboard-obra"].on_page_load = function (wrapper) {
 
     let _current_filter = "all";
     let _current_data = [];
+    const esc = v => frappe.utils.escape_html(v || "");
 
     // ── Click en lote (bind único para evitar apilamiento entre reloads) ─
     $("#ob-mosaic").on("click", ".ob-lot", function () {
@@ -277,9 +278,9 @@ frappe.pages["dashboard-obra"].on_page_load = function (wrapper) {
         const pct   = row.porcentaje_avance || 0;
         const color = lot_color(row);
         const key   = lot_status_key(row);
-        return `<div class="ob-lot" data-lote="${row.lote}" data-status="${key}" style="background:${color}"
-                    title="${row.lote} · ${row.estado_obra} · ${pct}%${row.contratista ? " · " + row.contratista : ""}">
-                    ${num}<small>${pct}%</small></div>`;
+        return `<div class="ob-lot" data-lote="${esc(row.lote)}" data-status="${key}" style="background:${color}"
+                    title="${esc(row.lote)} · ${esc(row.estado_obra)} · ${pct}%${row.contratista ? " · " + esc(row.contratista) : ""}">
+                    ${esc(num)}<small>${pct}%</small></div>`;
     }
 
     function apply_lot_filter(f) {
@@ -300,11 +301,11 @@ frappe.pages["dashboard-obra"].on_page_load = function (wrapper) {
 
         $("#ob-detail").html(`
             <h4>Detalle del Lote</h4>
-            <div class="lot-id">${row.lote || "—"}</div>
-            ${row.modelo ? `<div style="display:inline-block;margin:4px 0 12px;padding:3px 10px;border-radius:12px;background:#3b82f6;color:#fff;font-size:12px;font-weight:700">${row.modelo}</div>` : ""}
-            <div class="det-row"><span>Estado</span><span><span class="ob-badge" style="background:${badge_color}">${row.estado_obra||"—"}</span></span></div>
-            <div class="det-row"><span>Proyecto</span><span>${row.proyecto||"—"}</span></div>
-            <div class="det-row"><span>Contratista</span><span>${row.contratista||"—"}</span></div>
+            <div class="lot-id">${esc(row.lote) || "—"}</div>
+            ${row.modelo ? `<div style="display:inline-block;margin:4px 0 12px;padding:3px 10px;border-radius:12px;background:#3b82f6;color:#fff;font-size:12px;font-weight:700">${esc(row.modelo)}</div>` : ""}
+            <div class="det-row"><span>Estado</span><span><span class="ob-badge" style="background:${badge_color}">${esc(row.estado_obra)||"—"}</span></span></div>
+            <div class="det-row"><span>Proyecto</span><span>${esc(row.proyecto)||"—"}</span></div>
+            <div class="det-row"><span>Contratista</span><span>${esc(row.contratista)||"—"}</span></div>
             <div class="det-row"><span>Avance</span><span>${pct}%</span></div>
             <div class="prog-bar"><div style="width:${pct}%;background:${color}"></div><span>${pct}%</span></div>
             <div class="det-row" style="margin-top:10px"><span>Fecha Inicio</span><span>${fmtDate(row.fecha_inicio)}</span></div>
@@ -312,7 +313,7 @@ frappe.pages["dashboard-obra"].on_page_load = function (wrapper) {
             <div class="det-row"><span>Pre-Entrega</span><span>${fmtDate(row.fecha_pre_entrega)}</span></div>
             <div class="det-row"><span>Entrega Cliente</span><span>${fmtDate(row.fecha_entrega_cliente)}</span></div>
             <div class="det-row"><span>Cronograma</span><span style="color:${dias_color};font-weight:600">${dias_txt}</span></div>
-            ${row.contrato ? `<div class="det-row"><span>Contrato</span><span><a href="/app/contratoventa/${encodeURIComponent(row.contrato)}" target="_blank" title="${row.contrato}">Ver contrato →</a></span></div>` : ""}
+            ${row.contrato ? `<div class="det-row"><span>Contrato</span><span><a href="/app/contratoventa/${encodeURIComponent(row.contrato)}" target="_blank" title="${esc(row.contrato)}">Ver contrato →</a></span></div>` : ""}
         `);
     }
 
