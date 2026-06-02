@@ -42,6 +42,14 @@ sudo -u frappe bash -lc 'cd /home/frappe/frappe-bench/apps/urbanizacion && <comm
 - Do not silently mix documentation, fixture changes, business logic, and deployment changes in the same commit.
 - If a change affects permissions, workflows, Server Scripts, Client Scripts, DocTypes, hooks, pages, workspaces, or fixtures, assume it can affect production behavior.
 
+## Citation and Dispute Handling
+
+- When correcting, refuting, or pushing back on a user request about Frappe/ERPNext behavior, cite the relevant official documentation URL from the reference list above.
+- Prefer official Frappe/ERPNext/Bench documentation over memory or third-party examples.
+- If documentation and local site behavior differ, state both clearly: cite the documentation, then show the local command/output that proves the site-specific behavior.
+- For risky actions such as production migration, fixture overwrite, field removal, Server Script behavior, Client Script limitations, permissions, or workspace visibility, include the specific URL that supports the recommendation.
+- If no source was checked, do not present the claim as documentation-backed; say it is an inference from local code or prior project context.
+
 ## Official Frappe Behavior to Respect
 
 - `bench migrate` updates the site to the current app state. According to the Bench reference, it runs migrate hooks, patches, schema/background-job sync, fixture sync, dashboard/desktop-icon/web-page sync, translations, search index rebuild, and `after_migrate` hooks.
