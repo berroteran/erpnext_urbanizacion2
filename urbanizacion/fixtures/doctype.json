@@ -4726,6 +4726,13 @@
     "trigger": null,
     "unique": 0,
     "width": null
+   },
+   {
+    "default": "0",
+    "fieldname": "confirmado",
+    "fieldtype": "Check",
+    "hidden": 1,
+    "label": "Confirmado"
    }
   ],
   "force_re_route_to_default_view": 0,
@@ -9037,6 +9044,13 @@
     "trigger": null,
     "unique": 0,
     "width": null
+   },
+   {
+    "default": "0",
+    "fieldname": "confirmado",
+    "fieldtype": "Check",
+    "hidden": 1,
+    "label": "Confirmado"
    }
   ],
   "force_re_route_to_default_view": 0,
