@@ -47,7 +47,7 @@ sudo -u frappe bash -lc 'cd /home/frappe/frappe-bench/apps/urbanizacion && <comm
 - `bench migrate` updates the site to the current app state. According to the Bench reference, it runs migrate hooks, patches, schema/background-job sync, fixture sync, dashboard/desktop-icon/web-page sync, translations, search index rebuild, and `after_migrate` hooks.
 - Frappe schema changes come from DocType JSON files in the app. Developer mode updates DocType `.json` files automatically when saving DocTypes in a development environment.
 - Deleted DocType fields are soft-deleted: database columns are not removed immediately, but fields stop being visible/usable through document metadata. Do not treat this as harmless; it can still break UI, reports, scripts, permissions, and business behavior.
-- Frappe does not support reverse schema migrations. Do not rely on “rolling back migrate” as a safety plan.
+- Frappe does not support reverse schema migrations. Do not rely on "rolling back migrate" as a safety plan.
 - Data migrations belong in app patches: create an `execute` function in a Python patch module and register it in `patches.txt`, or use `bench create-patch` where appropriate.
 - Exported customizations can replace property setters and custom permissions on the target site. Review customization exports carefully before deploying.
 - Client Script validation only applies in the standard browser form view. If the rule must also apply through API, imports, background jobs, or System Console, implement server-side validation.
