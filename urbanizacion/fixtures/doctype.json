@@ -7864,7 +7864,7 @@
     "parent": "CartaReserva",
     "parentfield": "fields",
     "parenttype": "DocType",
-    "permlevel": 0,
+    "permlevel": 1,
     "placeholder": null,
     "precision": "",
     "print_hide": 0,
@@ -9317,6 +9317,24 @@
     "share": 1,
     "submit": 0,
     "write": 1
+   },
+   {
+    "role": "Urbanizacion Manager",
+    "permlevel": 1,
+    "read": 1,
+    "write": 1
+   },
+   {
+    "role": "Urbanizacion Operador",
+    "permlevel": 1,
+    "read": 1,
+    "write": 1
+   },
+   {
+    "role": "System Manager",
+    "permlevel": 1,
+    "read": 1,
+    "write": 1
    }
   ],
   "print_outline": null,
@@ -9828,6 +9846,13 @@
     "trigger": null,
     "unique": 0,
     "width": null
+   },
+   {
+    "fieldname": "precio",
+    "fieldtype": "Currency",
+    "label": "Precio",
+    "permlevel": 1,
+    "in_list_view": 0
    },
    {
     "allow_bulk_edit": 0,
@@ -11260,6 +11285,24 @@
     "share": 1,
     "submit": 0,
     "write": 0
+   },
+   {
+    "role": "Urbanizacion Manager",
+    "permlevel": 1,
+    "read": 1,
+    "write": 1
+   },
+   {
+    "role": "Urbanizacion Operador",
+    "permlevel": 1,
+    "read": 1,
+    "write": 1
+   },
+   {
+    "role": "System Manager",
+    "permlevel": 1,
+    "read": 1,
+    "write": 1
    }
   ],
   "print_outline": null,
