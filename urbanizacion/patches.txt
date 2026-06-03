@@ -4,5 +4,6 @@
 
 [post_model_sync]
 urbanizacion.patches.v1_0.harden_doctype_link_uniqueness
+urbanizacion.patches.v1_0.recalculate_varas_factor
 
 # Patches added in this section will be executed after doctypes are migrated
