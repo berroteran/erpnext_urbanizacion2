@@ -35,4 +35,4 @@ def execute():
 		(FACTOR,)
 	)
 
-	frappe.db.commit()
+
