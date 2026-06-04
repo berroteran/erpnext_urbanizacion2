@@ -433,7 +433,7 @@
   "rate_limit_count": 5,
   "rate_limit_seconds": 86400,
   "reference_doctype": "CartaReserva",
-  "script": "try:\n    before_doc = doc_before_save\nexcept NameError:\n    before_doc = None\n\nwas_confirmed = bool(before_doc.confirmado) if before_doc else False\nis_confirming  = bool(doc.confirmado) and not was_confirmed\n\nif is_confirming:\n    allowed = frappe.has_role(\"Urbanizacion Manager\") or frappe.has_role(\"System Manager\")\n    if not allowed:\n        frappe.throw(\"Solo Urbanizacion Manager puede confirmar este documento.\")\n",
+  "script": "try:\n    before_doc = doc_before_save\nexcept NameError:\n    before_doc = None\n\nwas_confirmed = bool(before_doc.confirmado) if before_doc else False\nis_confirming  = bool(doc.confirmado) and not was_confirmed\n\nif is_confirming:\n    user_roles = frappe.db.get_all(\n        \"Has Role\",\n        filters={\"parent\": frappe.session.user, \"parenttype\": \"User\"},\n        fields=[\"role\"],\n        pluck=\"role\"\n    )\n    allowed = \"Urbanizacion Manager\" in user_roles or \"System Manager\" in user_roles\n    if not allowed:\n        frappe.throw(\"Solo Urbanizacion Manager puede confirmar este documento.\")\n",
   "script_type": "DocType Event"
  },
  {
