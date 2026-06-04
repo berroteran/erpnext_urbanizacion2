@@ -3,10 +3,12 @@ import frappe
 
 def execute():
 	"""
-	Copia precio_base del CatalogoModelos al campo precio de cada Lote existente.
+	Copia precio_base del CatalogoModelos al campo precio de cada Lote existente
+	y sincroniza ese precio a las CartaReservas activas vinculadas.
 
-	Tabla afectada:
-	  - tabLotes: precio = CatalogoModelos.precio_base
+	Tablas afectadas:
+	  - tabLotes        : precio = CatalogoModelos.precio_base
+	  - tabCartaReserva : precio = tabLotes.precio (cartas activas)
 	"""
 	frappe.db.sql("""
 		UPDATE tabLotes AS l
@@ -16,4 +18,11 @@ def execute():
 		  AND c.precio_base > 0
 	""")
 
-	frappe.db.commit()
+	frappe.db.sql("""
+		UPDATE tabCartaReserva AS cr
+		JOIN tabLotes AS l ON l.name = cr.lote
+		SET cr.precio = l.precio
+		WHERE cr.estado = 'Activa'
+		  AND (cr.precio IS NULL OR cr.precio = 0)
+		  AND l.precio > 0
+	""")
