@@ -6,5 +6,6 @@
 urbanizacion.patches.v1_0.harden_doctype_link_uniqueness
 urbanizacion.patches.v1_0.recalculate_varas_factor
 urbanizacion.patches.v1_0.backfill_precio_lotes
+urbanizacion.patches.v1_0.backfill_actividad_obra_pesos
 
 # Patches added in this section will be executed after doctypes are migrated
