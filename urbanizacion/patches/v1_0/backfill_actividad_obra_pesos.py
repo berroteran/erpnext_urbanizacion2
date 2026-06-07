@@ -68,10 +68,11 @@ def execute():
 		UPDATE `tabSeguimientoObra` so
 		LEFT JOIN (
 			SELECT parent,
-				SUM(CASE WHEN estado = Completada THEN COALESCE(porcentaje_peso, 0) ELSE 0 END) AS avance
+				SUM(CASE WHEN estado = %s THEN COALESCE(porcentaje_peso, 0) ELSE 0 END) AS avance
 			FROM `tabActividadObra`
 			GROUP BY parent
 		) act ON act.parent = so.name
 		SET so.porcentaje_avance = ROUND(COALESCE(act.avance, 0), 1)
-		"""
+		""",
+		("Completada",),
 	)
