@@ -34,5 +34,3 @@ def execute():
 		"UPDATE tabCartaReserva SET v2_casa = m2_casa * %s WHERE m2_casa IS NOT NULL AND m2_casa > 0",
 		(FACTOR,)
 	)
-
-

@@ -1,4 +1,5 @@
 import frappe
+from frappe.database.schema import add_column
 
 
 def execute():
@@ -10,6 +11,9 @@ def execute():
 	  - tabLotes        : precio = CatalogoModelos.precio_base
 	  - tabCartaReserva : precio = tabLotes.precio (cartas activas)
 	"""
+	if not frappe.db.has_column("Lotes", "precio"):
+		add_column("Lotes", "precio", "Currency")
+
 	frappe.db.sql("""
 		UPDATE tabLotes AS l
 		JOIN tabCatalogoModelos AS c ON c.name = l.catalogo_modelos
