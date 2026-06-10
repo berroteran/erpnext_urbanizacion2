@@ -90,12 +90,18 @@ def execute():
 				- COALESCE(cr.descuento, 0),
 			2),
 			cr.monto_financiar = GREATEST(
-				cr.precio_total - COALESCE(cr.monto_prima, 0),
+				ROUND(
+					COALESCE(cr.precio, 0)
+					+ COALESCE(cr.costo_adicional, 0)
+					+ CASE WHEN cr.esquinero = 'Si' THEN 2000 ELSE 0 END
+					+ COALESCE(l.v2_extras, 0) * %s
+					- COALESCE(cr.descuento, 0),
+				2) - COALESCE(cr.monto_prima, 0),
 			0)
 		WHERE cr.estado = 'Activa'
 		  AND l.m2_extras IS NOT NULL AND l.m2_extras > 0
 		""",
-		(PRECIO_VARA,),
+		(PRECIO_VARA, PRECIO_VARA),
 	)
 
 	# Rebuild observaciones replicando la logica de calcularCarta del Client Script.
