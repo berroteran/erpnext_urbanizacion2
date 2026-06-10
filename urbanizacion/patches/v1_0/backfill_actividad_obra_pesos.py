@@ -1,4 +1,5 @@
 import frappe
+from frappe.database.schema import add_column
 
 
 ACTIVITY_WEIGHTS = {
@@ -52,6 +53,9 @@ ACTIVITY_WEIGHTS = {
 
 def execute():
 	"""Backfill historical construction activity weights and recalculate progress."""
+	if not frappe.db.has_column("ActividadObra", "porcentaje_peso"):
+		add_column("ActividadObra", "porcentaje_peso", "Float", precision=2, default=0, not_null=True)
+
 	for activity, weight in ACTIVITY_WEIGHTS.items():
 		frappe.db.sql(
 			"""
