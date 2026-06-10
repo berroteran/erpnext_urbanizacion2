@@ -14,6 +14,8 @@ _AUTO_KEYS = (
 	'Monto a financiar:',
 	'Prima:',
 	'Saldo neto de prima',
+	'Lote esquinero:',
+	'Metros extras:',
 )
 
 
