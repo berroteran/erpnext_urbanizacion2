@@ -266,4 +266,7 @@ override_doctype_dashboards = {
 	"Lotes": "urbanizacion.urbanizacion.dashboard.lotes_dashboard.get_data",
 }
 
-after_migrate = ["urbanizacion.urbanizacion.doctype_link_guard.after_migrate"]
+after_migrate = [
+	"urbanizacion.urbanizacion.doctype_link_guard.after_migrate",
+	"urbanizacion.urbanizacion.workspace_setup.after_migrate",
+]
