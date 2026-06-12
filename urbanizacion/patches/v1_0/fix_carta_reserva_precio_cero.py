@@ -9,7 +9,7 @@ def execute():
 	"""
 	affected = frappe.db.get_all(
 		"CartaReserva",
-		filters={"precio": 0, "lote": ["not in", ["", None]]},
+		filters={"precio": ["in", [0, None]], "lote": ["not in", ["", None]]},
 		fields=[
 			"name", "lote", "costo_adicional", "esquinero",
 			"descuento", "monto_prima", "monto_reservacion",
@@ -28,7 +28,7 @@ def execute():
 			"Lotes", cr["lote"], ["precio", "v2_extras"], as_dict=True
 		)
 
-		if not lote_data or not lote_data.get("precio"):
+		if not lote_data or lote_data.get("precio") is None:
 			frappe.logger().warning(
 				f"fix_carta_reserva_precio_cero: {cr['name']} — lote {cr['lote']} "
 				"sin precio, se omite."
