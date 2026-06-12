@@ -351,13 +351,13 @@
   "doctype_event": "Before Insert",
   "enable_rate_limit": 0,
   "event_frequency": "All",
-  "modified": "2026-05-20 15:36:39.626592",
+  "modified": "2026-06-12 00:00:00.000000",
   "module": null,
   "name": "urbCartaReserva-AutoVendedor",
   "rate_limit_count": 5,
   "rate_limit_seconds": 86400,
   "reference_doctype": "CartaReserva",
-  "script": "# Auto-asignar vendedor al usuario actual si no viene ya asignado\nif not doc.vendedor:\n    doc.vendedor = frappe.session.user\n",
+  "script": "user_roles = frappe.get_roles(frappe.session.user)\nis_manager  = \"Urbanizacion Manager\" in user_roles or \"System Manager\" in user_roles\nis_vendedor = \"Urbanizacion Vendedor\" in user_roles\n\nif is_vendedor and not is_manager:\n    doc.vendedor = frappe.session.user\nelif not doc.vendedor:\n    doc.vendedor = frappe.session.user\n",
   "script_type": "DocType Event"
  },
  {
