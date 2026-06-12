@@ -427,13 +427,13 @@
   "doctype_event": "Before Save",
   "enable_rate_limit": 0,
   "event_frequency": "All",
-  "modified": "2026-06-03 15:57:15.000000",
+  "modified": "2026-06-12 00:00:00.000000",
   "module": null,
   "name": "SS-VAL-CartaReserva-Confirmado",
   "rate_limit_count": 5,
   "rate_limit_seconds": 86400,
   "reference_doctype": "CartaReserva",
-  "script": "try:\n    before_doc = doc_before_save\nexcept NameError:\n    before_doc = None\n\nwas_confirmed = bool(before_doc.confirmado) if before_doc else False\nis_confirming  = bool(doc.confirmado) and not was_confirmed\n\nif is_confirming:\n    user_roles = frappe.db.get_all(\n        \"Has Role\",\n        filters={\"parent\": frappe.session.user, \"parenttype\": \"User\"},\n        fields=[\"role\"],\n        pluck=\"role\"\n    )\n    allowed = \"Urbanizacion Manager\" in user_roles or \"System Manager\" in user_roles\n    if not allowed:\n        frappe.throw(\"Solo Urbanizacion Manager puede confirmar este documento.\")\n",
+  "script": "try:\n    before_doc = doc_before_save\nexcept NameError:\n    before_doc = None\n\nwas_confirmed = bool(before_doc.confirmado) if before_doc else False\nis_confirming  = bool(doc.confirmado) and not was_confirmed\n\nwas_cancelada = (before_doc.estado == \"Cancelada\") if before_doc else False\nis_canceling  = doc.estado == \"Cancelada\" and not was_cancelada\n\nuser_roles = frappe.db.get_all(\n    \"Has Role\",\n    filters={\"parent\": frappe.session.user, \"parenttype\": \"User\"},\n    fields=[\"role\"],\n    pluck=\"role\"\n)\nis_manager  = \"Urbanizacion Manager\" in user_roles or \"System Manager\" in user_roles\nis_vendedor = \"Urbanizacion Vendedor\" in user_roles\n\nif is_confirming:\n    if is_manager:\n        pass\n    elif is_vendedor and doc.vendedor == frappe.session.user:\n        pass\n    else:\n        frappe.throw(\"Solo el vendedor asignado o Urbanizacion Manager puede confirmar esta Carta de Reserva.\")\n\nif is_canceling and not is_manager:\n    frappe.throw(\"Solo Urbanizacion Manager puede cancelar esta Carta de Reserva.\")\n",
   "script_type": "DocType Event"
  },
  {
