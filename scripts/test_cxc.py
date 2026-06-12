@@ -237,29 +237,36 @@ def t_build_abonos_prima_no_negativo():
     return PASS, ""
 
 def t_build_avance_con_seguimiento():
-    "avance = porcentaje_avance del SeguimientoObra; x_ejecutar = 100 - avance"
+    "avance = porcentaje_avance del SeguimientoObra; x_ejecutar = costo_promedio * (1 - avance/100) en USD"
     seguimiento = ns(porcentaje_avance=96.59)
     contrato = ns(name="CV-001", lote="L-001", confirmado=1,
                   nombre_comprador="X", nombre_comprador2=None,
                   precio_total=50000, monto_prima=10000, monto_reserva=500,
                   saldo_prima=9500, monto_financiar=40000)
-    row = _build_row(LOTE_BASE, None, contrato, [], seguimiento)
+    row = _build_row(LOTE_BASE, None, contrato, [], seguimiento, costo_m2=470.0)
     assert abs(row["avance"] - 96.59) < 0.01, f"avance={row['avance']}"
-    assert abs(row["x_ejecutar"] - 3.41) < 0.01, f"x_ejecutar={row['x_ejecutar']}"
+    # costo_promedio = 85.5 * 470.0 = 40185.0; x_ejecutar = 40185.0 * (1 - 96.59/100) ≈ 1370.31
+    assert abs(row["x_ejecutar"] - 1370.31) < 0.01, f"x_ejecutar={row['x_ejecutar']}"
     return PASS, ""
 
 def t_build_avance_sin_seguimiento():
-    "Sin SeguimientoObra: avance=0, x_ejecutar=100"
-    row = _build_row(LOTE_BASE, None, None, [], None)
+    "Sin SeguimientoObra: avance=0, x_ejecutar = costo_promedio completo (sin avance)"
+    row = _build_row(LOTE_BASE, None, None, [], None, costo_m2=470.0)
     assert row["avance"] == 0, f"avance={row['avance']}"
-    assert row["x_ejecutar"] == 100, f"x_ejecutar={row['x_ejecutar']}"
+    # costo_promedio = 85.5 * 470.0 = 40185.0; avance=0 → x_ejecutar = 40185.0
+    assert abs(row["x_ejecutar"] - 40185.0) < 0.01, f"x_ejecutar={row['x_ejecutar']}"
     return PASS, ""
 
 def t_build_avance_completo_no_negativo():
-    "avance=100 → x_ejecutar=0 (no negativo)"
+    "avance=100 → x_ejecutar=0.0 (obra terminada); avance>100 → x_ejecutar=0.0 (clamp max(0))"
     seguimiento = ns(porcentaje_avance=100)
-    row = _build_row(LOTE_BASE, None, None, [], seguimiento)
-    assert row["x_ejecutar"] == 0, f"x_ejecutar={row['x_ejecutar']}"
+    row = _build_row(LOTE_BASE, None, None, [], seguimiento, costo_m2=470.0)
+    # costo_promedio = 85.5 * 470.0 = 40185.0; avance=100 → x_ejecutar = 0.0
+    assert row["x_ejecutar"] == 0.0, f"x_ejecutar={row['x_ejecutar']}"
+    # avance > 100: sin clamp daría negativo; max(0,...) debe devolver 0.0
+    seguimiento_exceso = ns(porcentaje_avance=105)
+    row2 = _build_row(LOTE_BASE, None, None, [], seguimiento_exceso, costo_m2=470.0)
+    assert row2["x_ejecutar"] == 0.0, f"x_ejecutar con avance=105: {row2['x_ejecutar']}"
     return PASS, ""
 
 def t_build_cliente_dos_compradores():
@@ -381,9 +388,9 @@ run("abonos_prima: prima completamente pagada (L-2 del Excel)", t_build_abonos_p
 run("abonos_prima: pagos parciales de prima (L-4 del Excel)", t_build_abonos_prima_parciales)
 run("abonos_prima: sin abonos realizados → 0", t_build_abonos_prima_sin_pagos)
 run("abonos_prima: dato sucio no produce valor negativo", t_build_abonos_prima_no_negativo)
-run("avance: porcentaje desde SeguimientoObra, x_ejecutar = 100 - avance", t_build_avance_con_seguimiento)
-run("avance: sin SeguimientoObra → avance=0, x_ejecutar=100", t_build_avance_sin_seguimiento)
-run("avance: obra al 100% → x_ejecutar=0 (no negativo)", t_build_avance_completo_no_negativo)
+run("avance: porcentaje desde SeguimientoObra, x_ejecutar = costo_promedio*(1-avance/100) USD", t_build_avance_con_seguimiento)
+run("avance: sin SeguimientoObra → avance=0, x_ejecutar=costo_promedio completo", t_build_avance_sin_seguimiento)
+run("avance: obra al 100% → x_ejecutar=0.0; avance>100 clampea a 0.0", t_build_avance_completo_no_negativo)
 run("Dos compradores concatenados con ' / '", t_build_cliente_dos_compradores)
 run("Fallback a carta cuando no hay contrato", t_build_fallback_carta)
 run("Sin datos: precio del lote, cliente vacío, INVENTARIO", t_build_sin_datos)
