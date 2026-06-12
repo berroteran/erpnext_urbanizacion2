@@ -28,7 +28,8 @@ def get_columns():
 		{"label": _("Bloque"),                 "fieldname": "bloque",         "fieldtype": "Data",         "width": 80},
 		{"label": _("M² Casa"),                "fieldname": "m2_casa",        "fieldtype": "Float",        "width": 80,  "precision": 2},
 		{"label": _("Avance Obra"),            "fieldname": "avance",         "fieldtype": "Percent",      "width": 100},
-		{"label": _("Por Ejecutar"),           "fieldname": "x_ejecutar",     "fieldtype": "Percent",      "width": 100},
+		{"label": _("Costo Promedio"),         "fieldname": "costo_promedio", "fieldtype": "Currency",     "options": "USD", "width": 130},
+		{"label": _("Por Ejecutar"),           "fieldname": "x_ejecutar",     "fieldtype": "Currency",     "options": "USD", "width": 130},
 		{"label": _("Valor Venta"),            "fieldname": "precio_total",   "fieldtype": "Currency",     "options": "USD", "width": 130},
 		{"label": _("Banco"),                  "fieldname": "banco",          "fieldtype": "Data",         "width": 90},
 		{"label": _("Prima"),                  "fieldname": "monto_prima",    "fieldtype": "Currency",     "options": "USD", "width": 120},
@@ -59,6 +60,9 @@ def get_columns():
 
 def get_data(filters):
 	proyecto = filters.get("proyecto")
+
+	# 0. Project cost per m² for construction cost calculations
+	costo_m2 = frappe.db.get_value("Proyectos", proyecto, "costo_m2") or 0
 
 	# 1. All lotes for this project, ordered numerically
 	lotes = frappe.db.sql("""
@@ -152,7 +156,7 @@ def get_data(filters):
 		desembolsos = desembolsos_por_contrato.get(contrato.name if contrato else "", [])
 		seguimiento = seguimiento_por_lote.get(lote.name)
 
-		row = _build_row(lote, carta, contrato, desembolsos, seguimiento)
+		row = _build_row(lote, carta, contrato, desembolsos, seguimiento, costo_m2)
 
 		if estatus_filter and row["estatus"] != estatus_filter:
 			continue
@@ -171,7 +175,7 @@ def get_data(filters):
 # Row builder
 # ---------------------------------------------------------------------------
 
-def _build_row(lote, carta, contrato, desembolsos, seguimiento=None):
+def _build_row(lote, carta, contrato, desembolsos, seguimiento=None, costo_m2=0):
 	estatus = _get_estatus(lote, carta, contrato)
 
 	# --- Financial fields: contrato is authoritative, carta is fallback ---
@@ -208,9 +212,11 @@ def _build_row(lote, carta, contrato, desembolsos, seguimiento=None):
 	# --- Abonos de prima: pagos realizados contra la prima (excluye reserva inicial) ---
 	abonos_prima = max(0, monto_prima - monto_reserva - saldo_prima)
 
-	# --- Avance de obra desde SeguimientoObra ---
-	avance     = (seguimiento.porcentaje_avance or 0) if seguimiento else 0
-	x_ejecutar = max(0, 100 - avance)
+	# --- Avance y costo de construcción ---
+	avance         = (seguimiento.porcentaje_avance or 0) if seguimiento else 0
+	m2             = lote.m2_casa or 0
+	costo_promedio = m2 * costo_m2
+	x_ejecutar     = max(0.0, costo_promedio * (1 - avance / 100)) if costo_promedio else 0.0
 
 	# --- Desembolsos (up to 4, ordered by idx) ---
 	des = {}
@@ -234,8 +240,9 @@ def _build_row(lote, carta, contrato, desembolsos, seguimiento=None):
 		"alerta":         alerta,
 		"modelo":         lote.modelo or "",
 		"bloque":         lote.bloque or "",
-		"m2_casa":        lote.m2_casa or 0,
+		"m2_casa":        m2,
 		"avance":         avance,
+		"costo_promedio": costo_promedio,
 		"x_ejecutar":     x_ejecutar,
 		"precio_total":   precio_total,
 		"banco":          banco,
