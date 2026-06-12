@@ -1,6 +1,6 @@
 # Plan: Módulo de Cuentas por Cobrar (CXC)
 
-> Estado: **PLANIFICADO — pendiente de implementación**
+> Estado: **EN PROGRESO — Fase 1 completa, columnas de costo en curso**
 > Fuente del análisis: `CUENTAS POR COBRAR SAN GABRIEL (1).xlsx` (hoja `CXC SAN GABRIEL`), analizado el 2026-06-10.
 > Decisiones tomadas con el usuario el 2026-06-10 (ver sección "Decisiones").
 >
@@ -16,9 +16,12 @@
 | 2026-06-10 | Cambio de dirección (encargado del módulo): CXC se entrega como **reporte custom dentro del módulo de Contabilidad**, conectado directamente a ContratoVenta y CartaReserva. Ver sección 2.1 | ✅ Decidido |
 | 2026-06-10 | Fase 1 — Reporte CXC creado: `urbanizacion/urbanizacion/report/cuentas_por_cobrar_urbanizacion/`. Script Report `is_standard=Yes`, **`module=Urbanizacion`** (no Accounts — Frappe buscaría en erpnext), `ref_doctype=ContratoVenta`. Lee en vivo: Lotes, CartaReserva, ContratoVenta, urbDesembolso. Filtros: Proyecto (req), Estatus, Banco. Migrate local OK. | ✅ Código listo / local funcionando |
 | 2026-06-10 | Reporte añadido al workspace Accounting via `after_migrate` idempotente (`workspace_setup.py`). Añade Card Break + Link en `ws.links` y bloque `card` en `ws.content`. Verificado local OK. Pendiente: validar en `/app/accounting` local y desplegar a testing. | ✅ Local listo |
-| — | Fase 2 — Modelo (ReciboCobro, AdendumCuota, saldos, hooks) | ⬜ Pendiente |
+| 2026-06-11 | **Columnas Costo Promedio y X Ejecutar**: decisión de usuario — el costo/m² es por proyecto, no por modelo. Se agrega campo `costo_m2` (Float, non_negative, precisión 2) a `Proyectos` en sección "Cálculo de Costos y Facturación" (antes oculta, ahora visible). Reporte actualizado: nueva columna "Costo Promedio" = `m2_casa × proyecto.costo_m2`; "Por Ejecutar" cambia de `Percent` a `Currency USD` = `costo_promedio × (1 - avance%)`. Verificado local: reporte ejecuta OK, campo `costo_m2 decimal(21,2)` en `tabProyectos`. | ✅ Local listo |
+| 2026-06-11 | **Problema conocido: `bench migrate` falla** con `pymysql.err.OperationalError: (1292, "Truncated incorrect DECIMAL value: '')` en fase de patches. No es de nuestros cambios. Workaround hasta resolver: `bench execute frappe.utils.fixtures.sync_fixtures --kwargs '{"app":"urbanizacion"}'` + `bench execute frappe.db.updatedb --args '["Proyectos"]'` + `clear-cache`. Ver sección 2.3. | ⚠️ Issue pre-existente |
+| — | Retención y Devolución Boletas: pendiente definir dónde viven (¿campos en ContratoVenta?) | ❓ Pregunta abierta |
+| — | Fase 2 — Modelo (ReciboCobro, AdendumCuota, saldos, hooks) — **POSPUESTO**, usuario indicó enfocarse en columnas del reporte primero | ⬜ Pendiente |
 | — | Fase 2 — UX (Print Format, Client Scripts, workspace) | ⬜ Pendiente |
-| — | Fase 3 — Reporte CXC | ⬜ Pendiente |
+| — | Fase 3 — Reporte CXC (columnas mensuales, extras) — requiere ReciboCobro | ⬜ Pendiente |
 | — | Fase 4 — Migración histórica San Gabriel | ⬜ Pendiente |
 | — | Fase 5 — Futuro (lotes a cuotas, costo/avance) | ⬜ Pendiente |
 
@@ -48,16 +51,45 @@ reporte CXC equivalente al Excel, incluyendo flujo mensual cobrado.
 - **`module` del reporte debe ser `"Urbanizacion"`, no `"Accounts"`**: Frappe construye el
   path Python como `{app_del_modulo}.{modulo}.report.{nombre}`. Si se usa `"Accounts"`,
   busca en `erpnext.accounts.report.*` y falla con `ModuleNotFoundError`.
-- **Entorno local usa WSL**: sitio `urbanizacion.local`. Para correr bench sin TTY usar
-  `wsl -u frappe bash -lc '...'` (el `sudo -u frappe` da timeout sin TTY).
-- **Sync automático activo**: hook `PostToolUse` en `.claude/settings.json` hace rsync
-  Windows → WSL bench en cada Write/Edit. Migrate sigue siendo manual cuando hay JSON
-  de DocType/Report cambiado. Scripts en `scripts/sync-wsl.sh` y `scripts/migrate-local.sh`.
+- **Entorno local es Linux nativo** (no WSL). Bench en `/home/mistake/frappe-bench`, sitio
+  `urbanizacion.local`. No usar `wsl -u frappe` ni `sudo -u frappe`; correr bench directo
+  como usuario `mistake`. Scripts en `scripts/sync-wsl.sh` y `scripts/migrate-local.sh`
+  tienen rutas WSL antiguas (`/mnt/c/...`) — usar rsync manual desde
+  `/home/mistake/Escritorio/ErpNext/erpnext-bel-urbanizacion/` a
+  `/home/mistake/frappe-bench/apps/urbanizacion/`.
 - **Workspace de Accounting**: el bloque visual vive en `ws.content` (JSON con bloques
   tipo `card`, `shortcut`, `header`). Los links en `ws.links` (child table `Workspace Link`)
   usan `type="Card Break"` para secciones y `type="Link"` para ítems. Los reportes custom
   de testing ("Rpt POZOS", "Probando2") están en esa estructura — pendiente ver su posición
   exacta desde System Console en testing para replicar correctamente.
+
+## 2.3 Issue: bench migrate falla en local (2026-06-11)
+
+`bench migrate` falla con `pymysql.err.OperationalError: (1292, "Truncated incorrect DECIMAL value: '')` durante la fase de patches. No es causado por nuestros cambios. **El migrate llega a completar la actualización de DocTypes (100%) pero aborta en patches**, por lo que el fixture sync y la adición de columnas nuevas no ocurren.
+
+**Workaround hasta resolver el issue del DECIMAL:**
+
+```bash
+# 1. Sync de archivos repo → bench
+rsync -a --delete \
+  --exclude='.git' --exclude='__pycache__' --exclude='*.pyc' \
+  --exclude='.claude' --exclude='docs' --exclude='*.xlsx' \
+  /home/mistake/Escritorio/ErpNext/erpnext-bel-urbanizacion/ \
+  /home/mistake/frappe-bench/apps/urbanizacion/
+
+# 2. Importar fixtures al DB
+cd /home/mistake/frappe-bench
+bench --site urbanizacion.local execute frappe.utils.fixtures.sync_fixtures \
+  --kwargs '{"app": "urbanizacion"}'
+
+# 3. Si se agregó un campo nuevo a un DocType custom, forzar schema update:
+bench --site urbanizacion.local execute frappe.db.updatedb --args '["NombreDocType"]'
+
+# 4. Limpiar caché
+bench --site urbanizacion.local clear-cache
+```
+
+**Pendiente:** identificar qué patch frappe falla con el DECIMAL y reportar/parchear.
 
 ## 2.1 Cambio de dirección (2026-06-10, indicación del encargado del módulo)
 
@@ -283,14 +315,32 @@ completo antes de `migrate` en `erp.inversionesbel.com` (AGENTS.md).
 
 ## 7. Preguntas abiertas (resolver antes/durante implementación)
 
-1. **Numeración**: ¿el `ROC-` del sistema continúa la numeración física actual (~6800)
-   o inicia serie nueva? ¿ROC y REC son series distintas (ingreso vs egreso/caja)?
-2. **Devolución de boletas**: confirmar semántica exacta (¿devolución al banco que resta
-   del saldo de banco? — la fórmula del Excel la resta como un desembolso más).
-3. **Gastos de inscripción LPH y "acreditado a banco"**: hoy informativos; ¿se registran
-   como datos del contrato o como recibos informativos sin efecto en saldo?
-4. **Intereses**: ¿se cargan al saldo (aumentan la deuda) o solo se cobran como recibo
-   tipo Interés sin afectar prima? (En el Excel aparecen sumados dentro de la prima/abonos.)
-5. **Anulación de recibos**: ¿quién autoriza y se requiere motivo impreso?
-6. **¿Existe "vendedor" por cobro** (notas mencionan vendedores: doña Carmen, Jalima,
-   Germán, Silvio) — ¿se necesita comisión por cobro o basta el vendedor de la carta?
+### 7.1 Sobre columnas del reporte (foco actual — 2026-06-11)
+
+1. **Retención de Boletas / Devolución de Boletas**: no existen en ningún DocType actual.
+   Afectan el Saldo Banco (`LC − Σdesembolsos + retención − devolución`). ¿Dónde viven?
+   - Opción A: campos Currency en `ContratoVenta` (editables por el usuario).
+   - Opción B: tipos de cobro en `ReciboCobro` (requiere Fase 2).
+   - Opción C: omitir por ahora y mostrar Saldo Banco sin retención/devolución.
+
+2. **Gastos de inscripción LPH y "Acreditado a banco"**: informativos en el Excel.
+   ¿Se incluyen en el reporte como columnas, o se omiten completamente?
+
+3. **Abonos de Prima**: actualmente derivado como `prima − reserva − saldo_prima`.
+   Esto es correcto mientras no exista `ReciboCobro`. Confirmar si es aceptable como
+   dato provisional o si se prefiere mostrar vacío (`0`) hasta tener recibos reales.
+
+4. **Columnas mensuales (Nov25–Dic26)**: requieren `ReciboCobro`. ¿Se omiten por ahora
+   o se reserva el espacio con columnas en cero?
+
+5. **"Costo Promedio" en el reporte**: actualmente muestra `0` para proyectos sin
+   `costo_m2` configurado. ¿Se oculta la columna si el proyecto no tiene ese valor,
+   o se muestra `0`?
+
+### 7.2 Sobre ReciboCobro (Fase 2 — pospuesta, para retomar después)
+
+6. **Numeración ROC**: ¿continúa desde ~6800 o inicia serie nueva? ¿ROC y REC son series distintas?
+7. **Devolución de boletas**: semántica exacta — ¿devolución al cliente o pago directo a BEL?
+8. **Intereses**: ¿aumentan la deuda (se cargan al saldo) o solo se cobran como recibo informativo?
+9. **Anulación de recibos**: ¿quién autoriza y se requiere motivo impreso?
+10. **Vendedor por cobro**: ¿se necesita campo vendedor en ReciboCobro o basta el de la carta?
