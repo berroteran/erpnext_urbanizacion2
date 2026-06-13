@@ -31,7 +31,10 @@ def after_migrate():
 		# bench migrate corre fuera de una request; no hay commit automático garantizado
 		frappe.db.commit()
 	except Exception:
-		frappe.log_error(frappe.get_traceback(), "workspace_setup.after_migrate")
+		import traceback
+		msg = traceback.format_exc()
+		frappe.log_error(title="workspace_setup: after_migrate falló")
+		print(f"[workspace_setup] WARNING: after_migrate falló — revisar Error Log\n{msg}")
 
 
 def _ensure_links(ws):
