@@ -38,6 +38,7 @@ def get_columns():
 		{"label": _("Abonos Prima"),           "fieldname": "abonos_prima",   "fieldtype": "Currency",     "options": "USD", "width": 120},
 		{"label": _("Saldo Prima"),            "fieldname": "saldo_prima",    "fieldtype": "Currency",     "options": "USD", "width": 120},
 		{"label": _("Línea de Crédito"),       "fieldname": "linea_credito",  "fieldtype": "Currency",     "options": "USD", "width": 135},
+		{"label": _("Gastos Insc./Esc. LPH"), "fieldname": "gastos_lph",     "fieldtype": "Currency",     "options": "USD", "width": 145},
 		{"label": _("1er Desemb. Fecha"),      "fieldname": "des1_fecha",     "fieldtype": "Date",         "width": 120},
 		{"label": _("1er Desembolso"),         "fieldname": "des1_monto",     "fieldtype": "Currency",     "options": "USD", "width": 130},
 		{"label": _("2do Desemb. Fecha"),      "fieldname": "des2_fecha",     "fieldtype": "Date",         "width": 120},
@@ -108,7 +109,8 @@ def get_data(filters):
 			cv.name, cv.lote, cv.carta_reserva,
 			cv.nombre_comprador, cv.nombre_comprador2,
 			cv.precio_total, cv.monto_prima, cv.monto_reserva,
-			cv.saldo_prima, cv.monto_financiar, cv.confirmado
+			cv.saldo_prima, cv.monto_financiar, cv.confirmado,
+			cv.gastos_inscripcion_lph
 		FROM `tabContratoVenta` cv
 		WHERE cv.lote IN %s
 		ORDER BY cv.modified DESC
@@ -188,6 +190,7 @@ def _build_row(lote, carta, contrato, desembolsos, seguimiento=None, costo_m2=0)
 		monto_reserva = contrato.monto_reserva or 0
 		saldo_prima   = contrato.saldo_prima   or 0
 		linea_credito = contrato.monto_financiar or 0
+		gastos_lph    = contrato.gastos_inscripcion_lph or 0
 		banco         = (carta.banco if carta else "") or ""
 		fecha_reserva = carta.fecha if carta else None
 	elif carta:
@@ -197,6 +200,7 @@ def _build_row(lote, carta, contrato, desembolsos, seguimiento=None, costo_m2=0)
 		monto_reserva = carta.monto_reservacion  or 0
 		saldo_prima   = carta.saldo_neto_prima   or 0
 		linea_credito = carta.monto_financiar    or 0
+		gastos_lph    = 0
 		banco         = carta.banco              or ""
 		fecha_reserva = carta.fecha
 	else:
@@ -206,6 +210,7 @@ def _build_row(lote, carta, contrato, desembolsos, seguimiento=None, costo_m2=0)
 		monto_reserva = 0
 		saldo_prima   = 0
 		linea_credito = 0
+		gastos_lph    = 0
 		banco         = ""
 		fecha_reserva = None
 
@@ -252,6 +257,7 @@ def _build_row(lote, carta, contrato, desembolsos, seguimiento=None, costo_m2=0)
 		"abonos_prima":   abonos_prima,
 		"saldo_prima":    saldo_prima,
 		"linea_credito":  linea_credito,
+		"gastos_lph":     gastos_lph,
 		"des1_fecha":     des.get("des1_fecha"),
 		"des1_monto":     des.get("des1_monto", 0),
 		"des2_fecha":     des.get("des2_fecha"),
