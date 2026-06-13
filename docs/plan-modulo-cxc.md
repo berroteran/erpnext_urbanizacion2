@@ -1,6 +1,6 @@
 # Plan: Módulo de Cuentas por Cobrar (CXC)
 
-> Estado: **EN PROGRESO — Fase 1 completa, columnas de costo en curso**
+> Estado: **EN PROGRESO — Fase 1 completa + campo gastos LPH + hardening de bugs**
 > Fuente del análisis: `CUENTAS POR COBRAR SAN GABRIEL (1).xlsx` (hoja `CXC SAN GABRIEL`), analizado el 2026-06-10.
 > Decisiones tomadas con el usuario el 2026-06-10 (ver sección "Decisiones").
 >
@@ -18,6 +18,9 @@
 | 2026-06-10 | Reporte añadido al workspace Accounting via `after_migrate` idempotente (`workspace_setup.py`). Añade Card Break + Link en `ws.links` y bloque `card` en `ws.content`. Verificado local OK. Pendiente: validar en `/app/accounting` local y desplegar a testing. | ✅ Local listo |
 | 2026-06-11 | **Columnas Costo Promedio y X Ejecutar**: decisión de usuario — el costo/m² es por proyecto, no por modelo. Se agrega campo `costo_m2` (Float, non_negative, precisión 2) a `Proyectos` en sección "Cálculo de Costos y Facturación" (antes oculta, ahora visible). Reporte actualizado: nueva columna "Costo Promedio" = `m2_casa × proyecto.costo_m2`; "Por Ejecutar" cambia de `Percent` a `Currency USD` = `costo_promedio × (1 - avance%)`. Verificado local: reporte ejecuta OK, campo `costo_m2 decimal(21,2)` en `tabProyectos`. | ✅ Local listo |
 | 2026-06-11 | **Problema conocido: `bench migrate` falla** con `pymysql.err.OperationalError: (1292, "Truncated incorrect DECIMAL value: '')` en fase de patches. No es de nuestros cambios. Workaround hasta resolver: `bench execute frappe.utils.fixtures.sync_fixtures --kwargs '{"app":"urbanizacion"}'` + `bench execute frappe.db.updatedb --args '["Proyectos"]'` + `clear-cache`. Ver sección 2.3. | ⚠️ Issue pre-existente |
+| 2026-06-12 | **Campo `gastos_inscripcion_lph`** (Currency USD, non_negative) agregado a `ContratoVenta` sección "Datos Económicos". Uso: informativo, solo el contador lo llena. Campo con `permlevel=1`: visible/editable únicamente para `Urbanizacion Contabilidad` y `System Manager`; demás roles ven el contrato pero no el campo. En el reporte CXC, la columna "Gastos Insc./Esc. LPH" se inyecta condicionalmente según `frappe.get_roles()` — Operador y Consulta no la ven. Responde la pregunta abierta 7.1.2. | ✅ Local listo |
+| 2026-06-12 | **Fix `frappe.get_traceback()` en scripts de correo**: `urbCartaReserva - correo` y `urbContratoVenta - correo` usaban `frappe.get_traceback()` en el bloque `except`, que no está disponible en el sandbox `safe_exec`. Cuando no había cuenta de correo configurada, el except explotaba con `AttributeError` y bloqueaba el guardado del documento. Reemplazado por `frappe.log_error(title=...)` que captura el traceback automáticamente en Frappe v15. | ✅ |
+| 2026-06-12 | **Code review + 8 bugs corregidos** (revisión de toda la rama vs master). Ver sección 2.4 para detalle. Commits: `78bc095`, `9bd04dd`, `21767ea`, `1fef1af`, `27ec29e`. | ✅ Local listo |
 | — | Retención y Devolución Boletas: pendiente definir dónde viven (¿campos en ContratoVenta?) | ❓ Pregunta abierta |
 | — | Fase 2 — Modelo (ReciboCobro, AdendumCuota, saldos, hooks) — **POSPUESTO**, usuario indicó enfocarse en columnas del reporte primero | ⬜ Pendiente |
 | — | Fase 2 — UX (Print Format, Client Scripts, workspace) | ⬜ Pendiente |
@@ -90,6 +93,21 @@ bench --site urbanizacion.local clear-cache
 ```
 
 **Pendiente:** identificar qué patch frappe falla con el DECIMAL y reportar/parchear.
+
+## 2.4 Bugs corregidos en code review (2026-06-12)
+
+Code review de toda la rama DiegoDeveloper vs master. 8 hallazgos confirmados, todos resueltos:
+
+| # | Archivo | Bug | Fix |
+|---|---------|-----|-----|
+| 1 | `fixtures/server_script.json` | `SS-VAL-CartaReserva-Confirmado`: bare `doc_before_save` sin `try/except NameError` → crash en inserciones programáticas | Añadido `try/except NameError` igual que los otros 4 scripts del fixture |
+| 2 | `cuentas_por_cobrar_urbanizacion.py` | `_get_estatus` devolvía `CANCELADA` cuando existía CartaReserva cancelada + ContratoVenta sin confirmar → contrato abierto invisible en el reporte | ContratoVenta RESERVA evalúa antes que CANCELADA |
+| 3 | `cuentas_por_cobrar_urbanizacion.py` | `frappe.db.sql()` no aplica permlevel → `gastos_lph` visible a Operador y Consulta pese al `permlevel=1` | Columna insertada condicionalmente por `_can_see_gastos_lph()` |
+| 4 | `fixtures/doctype.json` | `CartaReserva.descuento` cambiado a `Currency` sin `non_negative=1` → descuento negativo infla `precio_total` | `non_negative=1` en fixture + DB |
+| 5 | `fixtures/server_script.json` | `SS-CALC`: guard `lote.get('precio') is not None` deja pasar `precio=0` → `precio_total` puede quedar negativo si hay descuento | Guard cambiado a truthy check (`lote.get('precio')`) |
+| 6 | `scripts/test_cxc.py` | 16 objetos `SimpleNamespace` de contrato sin `gastos_inscripcion_lph` → `AttributeError` en todos los tests de contrato | `gastos_inscripcion_lph=0` agregado a todos los fixtures |
+| 7 | `cuentas_por_cobrar_urbanizacion.py` | `SeguimientoObra` ordenado por `modified DESC` → editar un registro antiguo lo hace el más reciente y desplaza el avance real | Cambiado a `ORDER BY creation DESC` (inmutable) |
+| 8 | `workspace_setup.py` | `after_migrate` silenciaba todas las excepciones → fallo de inyección del workspace invisible en `bench migrate` | `print()` a stdout + `frappe.log_error` en el `except` |
 
 ## 2.1 Cambio de dirección (2026-06-10, indicación del encargado del módulo)
 
@@ -323,8 +341,7 @@ completo antes de `migrate` en `erp.inversionesbel.com` (AGENTS.md).
    - Opción B: tipos de cobro en `ReciboCobro` (requiere Fase 2).
    - Opción C: omitir por ahora y mostrar Saldo Banco sin retención/devolución.
 
-2. **Gastos de inscripción LPH y "Acreditado a banco"**: informativos en el Excel.
-   ¿Se incluyen en el reporte como columnas, o se omiten completamente?
+2. ~~**Gastos de inscripción LPH**~~: ✅ **Resuelto 2026-06-12.** Campo `gastos_inscripcion_lph` (Currency USD) en `ContratoVenta`, permlevel=1 (solo contador). Columna en reporte CXC visible solo para `Urbanizacion Contabilidad` y `System Manager`. "Acreditado a banco": pendiente definir si se incluye.
 
 3. **Abonos de Prima**: actualmente derivado como `prima − reserva − saldo_prima`.
    Esto es correcto mientras no exista `ReciboCobro`. Confirmar si es aceptable como
