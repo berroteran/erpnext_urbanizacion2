@@ -20,7 +20,7 @@ def execute(filters=None):
 # ---------------------------------------------------------------------------
 
 def get_columns():
-	return [
+	cols = [
 		{"label": _("No."),                    "fieldname": "idx",           "fieldtype": "Int",          "width": 55},
 		{"label": _("Cliente"),                "fieldname": "cliente",        "fieldtype": "Data",         "width": 230},
 		{"label": _("Estatus"),                "fieldname": "estatus",        "fieldtype": "Data",         "width": 110},
@@ -38,7 +38,6 @@ def get_columns():
 		{"label": _("Abonos Prima"),           "fieldname": "abonos_prima",   "fieldtype": "Currency",     "options": "USD", "width": 120},
 		{"label": _("Saldo Prima"),            "fieldname": "saldo_prima",    "fieldtype": "Currency",     "options": "USD", "width": 120},
 		{"label": _("Línea de Crédito"),       "fieldname": "linea_credito",  "fieldtype": "Currency",     "options": "USD", "width": 135},
-		{"label": _("Gastos Insc./Esc. LPH"), "fieldname": "gastos_lph",     "fieldtype": "Currency",     "options": "USD", "width": 145},
 		{"label": _("1er Desemb. Fecha"),      "fieldname": "des1_fecha",     "fieldtype": "Date",         "width": 120},
 		{"label": _("1er Desembolso"),         "fieldname": "des1_monto",     "fieldtype": "Currency",     "options": "USD", "width": 130},
 		{"label": _("2do Desemb. Fecha"),      "fieldname": "des2_fecha",     "fieldtype": "Date",         "width": 120},
@@ -53,6 +52,23 @@ def get_columns():
 		{"label": _("Contrato"),               "fieldname": "contrato",       "fieldtype": "Link",         "width": 145, "options": "ContratoVenta"},
 		{"label": _("Carta Reserva"),          "fieldname": "carta_reserva",  "fieldtype": "Link",         "width": 145, "options": "CartaReserva"},
 	]
+	# gastos_lph es permlevel=1 (solo Contabilidad); se inserta después de linea_credito
+	# solo para roles autorizados; frappe.db.sql no aplica permlevel, así que filtramos aquí
+	if _can_see_gastos_lph():
+		idx = next(i for i, c in enumerate(cols) if c["fieldname"] == "linea_credito")
+		cols.insert(idx + 1, {
+			"label": _("Gastos Insc./Esc. LPH"),
+			"fieldname": "gastos_lph",
+			"fieldtype": "Currency",
+			"options": "USD",
+			"width": 145,
+		})
+	return cols
+
+
+def _can_see_gastos_lph():
+	roles = frappe.get_roles()
+	return "Urbanizacion Contabilidad" in roles or "System Manager" in roles
 
 
 # ---------------------------------------------------------------------------
@@ -135,11 +151,12 @@ def get_data(filters):
 			desembolsos_por_contrato.setdefault(d.parent, []).append(d)
 
 	# 5. SeguimientoObra – most recent per lote (for construction progress)
+	# ORDER BY creation DESC (immutable) to avoid stale avance when old records are edited
 	seguimientos_raw = frappe.db.sql("""
 		SELECT lote, porcentaje_avance
 		FROM `tabSeguimientoObra`
 		WHERE lote IN %s
-		ORDER BY modified DESC
+		ORDER BY creation DESC
 	""", [lote_names], as_dict=True)
 
 	seguimiento_por_lote = {}
@@ -280,11 +297,11 @@ def _build_row(lote, carta, contrato, desembolsos, seguimiento=None, costo_m2=0)
 def _get_estatus(lote, carta, contrato):
 	if contrato and contrato.confirmado:
 		return "FORMALIZADO"
-	# Carta cancelada tiene precedencia sobre contrato no confirmado (dato sucio)
-	if carta and carta.estado == "Cancelada" and (not contrato or not contrato.confirmado):
-		return "CANCELADA"
+	# Un ContratoVenta abierto tiene prioridad sobre cualquier CartaReserva cancelada
 	if contrato and not contrato.confirmado:
 		return "RESERVA"
+	if carta and carta.estado == "Cancelada":
+		return "CANCELADA"
 	if carta and carta.estado == "Activa":
 		return "RESERVA"
 	return "INVENTARIO"
