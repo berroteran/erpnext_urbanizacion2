@@ -185,7 +185,8 @@ def t_build_fuente_contrato():
     contrato = ns(name="CV-001", lote="L-001", confirmado=1,
                   nombre_comprador="Juan Pérez", nombre_comprador2=None,
                   precio_total=50000, monto_prima=10000, monto_reserva=500,
-                  saldo_prima=9500, monto_financiar=40000)
+                  saldo_prima=9500, monto_financiar=40000,
+                  gastos_inscripcion_lph=0)
     carta = ns(name="CR-001", lote="L-001", banco="BAC", fecha="2025-01-10",
                estado="Activa", nombre_solicitante="Juan Pérez",
                cr_precio=48000, monto_prima=9000, monto_reservacion=500,
@@ -201,7 +202,8 @@ def t_build_abonos_prima_con_contrato():
     contrato = ns(name="CV-001", lote="L-001", confirmado=1,
                   nombre_comprador="X", nombre_comprador2=None,
                   precio_total=169800, monto_prima=36040, monto_reserva=2000,
-                  saldo_prima=0, monto_financiar=133760)
+                  saldo_prima=0, monto_financiar=133760,
+                  gastos_inscripcion_lph=0)
     row = _build_row(LOTE_BASE, None, contrato, [])
     assert row["abonos_prima"] == 34040, f"abonos_prima={row['abonos_prima']}"
     return PASS, ""
@@ -211,7 +213,8 @@ def t_build_abonos_prima_parciales():
     contrato = ns(name="CV-001", lote="L-001", confirmado=0,
                   nombre_comprador="X", nombre_comprador2=None,
                   precio_total=168990, monto_prima=16990, monto_reserva=2000,
-                  saldo_prima=7111.2, monto_financiar=152000)
+                  saldo_prima=7111.2, monto_financiar=152000,
+                  gastos_inscripcion_lph=0)
     row = _build_row(LOTE_BASE, None, contrato, [])
     assert abs(row["abonos_prima"] - 7878.8) < 0.01, f"abonos_prima={row['abonos_prima']}"
     return PASS, ""
@@ -221,7 +224,8 @@ def t_build_abonos_prima_sin_pagos():
     contrato = ns(name="CV-001", lote="L-001", confirmado=0,
                   nombre_comprador="X", nombre_comprador2=None,
                   precio_total=50000, monto_prima=10000, monto_reserva=2000,
-                  saldo_prima=8000, monto_financiar=40000)
+                  saldo_prima=8000, monto_financiar=40000,
+                  gastos_inscripcion_lph=0)
     row = _build_row(LOTE_BASE, None, contrato, [])
     assert row["abonos_prima"] == 0, f"abonos_prima={row['abonos_prima']}"
     return PASS, ""
@@ -231,7 +235,8 @@ def t_build_abonos_prima_no_negativo():
     contrato = ns(name="CV-001", lote="L-001", confirmado=0,
                   nombre_comprador="X", nombre_comprador2=None,
                   precio_total=50000, monto_prima=5000, monto_reserva=2000,
-                  saldo_prima=9000, monto_financiar=40000)
+                  saldo_prima=9000, monto_financiar=40000,
+                  gastos_inscripcion_lph=0)
     row = _build_row(LOTE_BASE, None, contrato, [])
     assert row["abonos_prima"] >= 0, f"abonos_prima negativo: {row['abonos_prima']}"
     return PASS, ""
@@ -242,7 +247,8 @@ def t_build_avance_con_seguimiento():
     contrato = ns(name="CV-001", lote="L-001", confirmado=1,
                   nombre_comprador="X", nombre_comprador2=None,
                   precio_total=50000, monto_prima=10000, monto_reserva=500,
-                  saldo_prima=9500, monto_financiar=40000)
+                  saldo_prima=9500, monto_financiar=40000,
+                  gastos_inscripcion_lph=0)
     row = _build_row(LOTE_BASE, None, contrato, [], seguimiento, costo_m2=470.0)
     assert abs(row["avance"] - 96.59) < 0.01, f"avance={row['avance']}"
     # costo_promedio = 85.5 * 470.0 = 40185.0; x_ejecutar = 40185.0 * (1 - 96.59/100) ≈ 1370.31
@@ -274,7 +280,8 @@ def t_build_cliente_dos_compradores():
     contrato = ns(name="CV-001", lote="L-001", confirmado=1,
                   nombre_comprador="Juan Pérez", nombre_comprador2="María López",
                   precio_total=50000, monto_prima=10000, monto_reserva=500,
-                  saldo_prima=9500, monto_financiar=40000)
+                  saldo_prima=9500, monto_financiar=40000,
+                  gastos_inscripcion_lph=0)
     row = _build_row(LOTE_BASE, None, contrato, [])
     assert row["cliente"] == "Juan Pérez / María López", f"got {row['cliente']!r}"
     return PASS, ""
@@ -304,7 +311,8 @@ def t_build_saldo_banco():
     contrato = ns(name="CV-001", lote="L-001", confirmado=1,
                   nombre_comprador="X", nombre_comprador2=None,
                   precio_total=50000, monto_prima=10000, monto_reserva=500,
-                  saldo_prima=9500, monto_financiar=40000)
+                  saldo_prima=9500, monto_financiar=40000,
+                  gastos_inscripcion_lph=0)
     des = [
         ns(realizado=1, fecha_realizado="2025-06-01", monto=15000, idx=1),
         ns(realizado=1, fecha_realizado="2025-09-01", monto=15000, idx=2),
@@ -321,7 +329,8 @@ def t_build_saldo_cliente():
     contrato = ns(name="CV-001", lote="L-001", confirmado=1,
                   nombre_comprador="X", nombre_comprador2=None,
                   precio_total=50000, monto_prima=10000, monto_reserva=500,
-                  saldo_prima=5000, monto_financiar=40000)
+                  saldo_prima=5000, monto_financiar=40000,
+                  gastos_inscripcion_lph=0)
     des = [ns(realizado=1, fecha_realizado="2025-06-01", monto=10000, idx=1)]
     row = _build_row(LOTE_BASE, None, contrato, des)
     # saldo_banco = 40000 - 10000 = 30000; saldo_cliente = 5000 + 30000 = 35000
@@ -334,7 +343,8 @@ def t_build_desembolso_no_realizado():
     contrato = ns(name="CV-001", lote="L-001", confirmado=1,
                   nombre_comprador="X", nombre_comprador2=None,
                   precio_total=50000, monto_prima=10000, monto_reserva=500,
-                  saldo_prima=9500, monto_financiar=40000)
+                  saldo_prima=9500, monto_financiar=40000,
+                  gastos_inscripcion_lph=0)
     des = [ns(realizado=0, fecha_realizado="2025-06-01", monto=15000, idx=1)]
     row = _build_row(LOTE_BASE, None, contrato, des)
     assert row["des1_monto"] == 0, f"des1_monto={row['des1_monto']}"
@@ -347,7 +357,8 @@ def t_build_mas_de_4_desembolsos():
     contrato = ns(name="CV-001", lote="L-001", confirmado=1,
                   nombre_comprador="X", nombre_comprador2=None,
                   precio_total=50000, monto_prima=10000, monto_reserva=500,
-                  saldo_prima=9500, monto_financiar=50000)
+                  saldo_prima=9500, monto_financiar=50000,
+                  gastos_inscripcion_lph=0)
     des = [ns(realizado=1, fecha_realizado=f"2025-0{i}-01", monto=5000, idx=i)
            for i in range(1, 8)]  # 7 desembolsos
     row = _build_row(LOTE_BASE, None, contrato, des)
@@ -365,7 +376,8 @@ def t_build_saldo_banco_negativo():
     contrato = ns(name="CV-001", lote="L-001", confirmado=1,
                   nombre_comprador="X", nombre_comprador2=None,
                   precio_total=50000, monto_prima=10000, monto_reserva=500,
-                  saldo_prima=9500, monto_financiar=40000)
+                  saldo_prima=9500, monto_financiar=40000,
+                  gastos_inscripcion_lph=0)
     des = [ns(realizado=1, fecha_realizado="2025-06-01", monto=45000, idx=1)]
     row = _build_row(LOTE_BASE, None, contrato, des)
     assert row["saldo_banco"] == -5000, f"saldo_banco={row['saldo_banco']}"
@@ -377,7 +389,8 @@ def t_build_valores_none_no_crashean():
     contrato = ns(name="CV-001", lote="L-001", confirmado=1,
                   nombre_comprador=None, nombre_comprador2=None,
                   precio_total=None, monto_prima=None, monto_reserva=None,
-                  saldo_prima=None, monto_financiar=None)
+                  saldo_prima=None, monto_financiar=None,
+                  gastos_inscripcion_lph=None)
     row = _build_row(LOTE_BASE, None, contrato, [])
     assert row["precio_total"] == 0
     assert row["cliente"] == ""
@@ -652,7 +665,8 @@ def t_borde_contrato_monto_financiar_cero():
     contrato = ns(name="CV-001", lote="L-001", confirmado=1,
                   nombre_comprador="X", nombre_comprador2=None,
                   precio_total=50000, monto_prima=10000, monto_reserva=500,
-                  saldo_prima=9500, monto_financiar=0)
+                  saldo_prima=9500, monto_financiar=0,
+                  gastos_inscripcion_lph=0)
     row = _build_row(LOTE_BASE, None, contrato, [])
     assert row["saldo_banco"] == 0
     assert row["saldo_cliente"] == 9500
@@ -663,7 +677,8 @@ def t_borde_contrato_sin_carta_banco_vacio():
     contrato = ns(name="CV-001", lote="L-001", confirmado=1,
                   nombre_comprador="X", nombre_comprador2=None,
                   precio_total=50000, monto_prima=10000, monto_reserva=500,
-                  saldo_prima=9500, monto_financiar=40000)
+                  saldo_prima=9500, monto_financiar=40000,
+                  gastos_inscripcion_lph=0)
     row = _build_row(LOTE_BASE, None, contrato, [])
     assert row["banco"] == "", f"banco={row['banco']!r}"
     return PASS, ""
@@ -673,7 +688,8 @@ def t_borde_carta_banco_none():
     contrato = ns(name="CV-001", lote="L-001", confirmado=1,
                   nombre_comprador="X", nombre_comprador2=None,
                   precio_total=50000, monto_prima=10000, monto_reserva=500,
-                  saldo_prima=9500, monto_financiar=40000)
+                  saldo_prima=9500, monto_financiar=40000,
+                  gastos_inscripcion_lph=0)
     carta = ns(name="CR-001", banco=None, fecha="2025-01-01", estado="Activa",
                nombre_solicitante="X", cr_precio=48000, monto_prima=9000,
                monto_reservacion=400, saldo_neto_prima=8600, monto_financiar=38000)
@@ -686,7 +702,8 @@ def t_borde_desembolso_monto_none():
     contrato = ns(name="CV-001", lote="L-001", confirmado=1,
                   nombre_comprador="X", nombre_comprador2=None,
                   precio_total=50000, monto_prima=10000, monto_reserva=500,
-                  saldo_prima=9500, monto_financiar=40000)
+                  saldo_prima=9500, monto_financiar=40000,
+                  gastos_inscripcion_lph=0)
     des = [ns(realizado=1, fecha_realizado="2025-06-01", monto=None, idx=1)]
     row = _build_row(LOTE_BASE, None, contrato, des)
     assert row["des1_monto"] == 0, f"des1_monto={row['des1_monto']}"
