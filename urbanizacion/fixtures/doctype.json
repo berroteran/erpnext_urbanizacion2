@@ -8735,7 +8735,7 @@
     "mandatory_depends_on": null,
     "max_height": null,
     "no_copy": 0,
-    "non_negative": 0,
+    "non_negative": 1,
     "oldfieldname": null,
     "oldfieldtype": null,
     "options": null,
