@@ -64,7 +64,7 @@ fixtures = [
 # Svg Icons
 # ------------------
 # include app icons in desk
-# app_include_icons = "urbanizacion/public/icons.svg"
+app_include_icons = "urbanizacion/public/icons.svg"
 
 # Home Pages
 # ----------
