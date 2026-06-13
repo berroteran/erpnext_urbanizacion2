@@ -11,5 +11,6 @@ urbanizacion.patches.v1_0.fix_lotes_v2_extras
 urbanizacion.patches.v1_0.remove_obsolete_ss_dup_seguimiento
 urbanizacion.patches.v1_0.fix_lotes_v2_extras_financing
 urbanizacion.patches.v1_0.ensure_urbanizacion_page_access
+urbanizacion.patches.v1_0.set_urbanizacion_default_workspace
 
 # Patches added in this section will be executed after doctypes are migrated
