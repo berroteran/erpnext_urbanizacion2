@@ -142,7 +142,7 @@ def get_data(filters):
 	desembolsos_por_contrato = {}
 	if contrato_names:
 		desembolsos = frappe.db.sql("""
-			SELECT parent, monto, realizado, fecha_realizado, idx
+			SELECT parent, monto, estado, fecha_realizado, idx
 			FROM `taburbDesembolso`
 			WHERE parent IN %s
 			ORDER BY parent, idx ASC
@@ -243,14 +243,14 @@ def _build_row(lote, carta, contrato, desembolsos, seguimiento=None, costo_m2=0)
 	# --- Desembolsos (up to 4, ordered by idx) ---
 	des = {}
 	for i, d in enumerate(desembolsos[:4], 1):
-		if d.realizado:
+		if d.estado == "Realizado":
 			des[f"des{i}_fecha"]  = d.fecha_realizado
 			des[f"des{i}_monto"]  = d.monto or 0
 		else:
 			des[f"des{i}_fecha"]  = None
 			des[f"des{i}_monto"]  = 0
 
-	total_desembolsado = sum(d.monto or 0 for d in desembolsos if d.realizado)
+	total_desembolsado = sum(d.monto or 0 for d in desembolsos if d.estado == "Realizado")
 	saldo_banco   = linea_credito - total_desembolsado
 	saldo_cliente = saldo_prima + saldo_banco
 	alerta        = "SOBREGIRO" if saldo_banco < 0 else ""
