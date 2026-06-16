@@ -1,6 +1,6 @@
 # Plan: Módulo de Cuentas por Cobrar (CXC)
 
-> Estado: **EN PROGRESO — Fase 1 completa + campo gastos LPH + hardening de bugs**
+> Estado: **EN PROGRESO — Fase 1 completa + campo gastos LPH + hardening de bugs + restricción desembolsos**
 > Fuente del análisis: `CUENTAS POR COBRAR SAN GABRIEL (1).xlsx` (hoja `CXC SAN GABRIEL`), analizado el 2026-06-10.
 > Decisiones tomadas con el usuario el 2026-06-10 (ver sección "Decisiones").
 >
@@ -21,6 +21,7 @@
 | 2026-06-12 | **Campo `gastos_inscripcion_lph`** (Currency USD, non_negative) agregado a `ContratoVenta` sección "Datos Económicos". Uso: informativo, solo el contador lo llena. Campo con `permlevel=1`: visible/editable únicamente para `Urbanizacion Contabilidad` y `System Manager`; demás roles ven el contrato pero no el campo. En el reporte CXC, la columna "Gastos Insc./Esc. LPH" se inyecta condicionalmente según `frappe.get_roles()` — Operador y Consulta no la ven. Responde la pregunta abierta 7.1.2. | ✅ Local listo |
 | 2026-06-12 | **Fix `frappe.get_traceback()` en scripts de correo**: `urbCartaReserva - correo` y `urbContratoVenta - correo` usaban `frappe.get_traceback()` en el bloque `except`, que no está disponible en el sandbox `safe_exec`. Cuando no había cuenta de correo configurada, el except explotaba con `AttributeError` y bloqueaba el guardado del documento. Reemplazado por `frappe.log_error(title=...)` que captura el traceback automáticamente en Frappe v15. | ✅ |
 | 2026-06-12 | **Code review + 8 bugs corregidos** (revisión de toda la rama vs master). Ver sección 2.4 para detalle. Commits: `78bc095`, `9bd04dd`, `21767ea`, `1fef1af`, `27ec29e`. | ✅ Local listo |
+| 2026-06-16 | **Restricción sección "Plan de Desembolsos" en ContratoVenta**: `desembolsos_section` y `desembolsos` movidos a `permlevel=1`. Solo `Urbanizacion Contabilidad` y `System Manager` pueden ver/editar la tabla. Vendedor, Operador, Consulta y Manager no la ven. Decisión: en Fase 2 la tabla se llenará automáticamente desde `ReciboCobro`; el Vendedor no debe editarla manualmente. Aplicado en local con `sync_fixtures` + `clear-cache`. | ✅ Local listo |
 | — | Retención y Devolución Boletas: pendiente definir dónde viven (¿campos en ContratoVenta?) | ❓ Pregunta abierta |
 | — | Fase 2 — Modelo (ReciboCobro, AdendumCuota, saldos, hooks) — **POSPUESTO**, usuario indicó enfocarse en columnas del reporte primero | ⬜ Pendiente |
 | — | Fase 2 — UX (Print Format, Client Scripts, workspace) | ⬜ Pendiente |
