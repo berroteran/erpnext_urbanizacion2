@@ -3867,7 +3867,8 @@
    {
     "fieldname": "desembolsos_section",
     "fieldtype": "Section Break",
-    "label": "Plan de Desembolsos"
+    "label": "Plan de Desembolsos",
+    "permlevel": 1
    },
    {
     "allow_bulk_edit": 0,
@@ -3911,7 +3912,7 @@
     "parent": "ContratoVenta",
     "parentfield": "fields",
     "parenttype": "DocType",
-    "permlevel": 0,
+    "permlevel": 1,
     "placeholder": null,
     "precision": "",
     "print_hide": 0,
