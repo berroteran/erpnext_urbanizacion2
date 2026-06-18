@@ -241,9 +241,6 @@ def _build_row(lote, carta, contrato, desembolsos, seguimiento=None, costo_m2=0)
 	x_ejecutar     = max(0.0, costo_promedio * (1 - avance / 100)) if costo_promedio else 0.0
 
 	# --- Desembolsos (up to 4, ordered by idx) ---
-	# total_desembolsado sums ALL entries; columns only show des1-des4.
-	# If a contrato ever has 5+ desembolsos the overflow is invisible in columns
-	# but the saldo_banco calculation remains correct.
 	des = {}
 	for i, d in enumerate(desembolsos[:4], 1):
 		if d.estado == "Realizado":
