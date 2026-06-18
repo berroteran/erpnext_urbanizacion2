@@ -13,7 +13,7 @@
     "fieldname": "proyecto",
     "fieldtype": "Link",
     "label": "Proyecto",
-    "mandatory": 0,
+    "mandatory": 1,
     "options": "Proyectos",
     "parent": "Cuentas por Cobrar Urbanizacion",
     "parentfield": "filters",
