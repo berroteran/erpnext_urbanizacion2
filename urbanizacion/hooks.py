@@ -16,6 +16,7 @@ fixtures = [
 	{"dt": "Print Format", "filters": [["doc_type", "in", ["Proyectos","CatalogoModelos","ContratoVenta","CartaReserva","Lotes","Adendum","AdendumExtra","ActividadObra","FotoAvance","SeguimientoObra","CambioLote"]]]},
 	{"dt": "Web Page", "filters": [["name", "=", "importar-lotes"]]},
 	{"dt": "Role", "filters": [["name", "in", ["Urbanizacion Manager", "Urbanizacion Operador", "Urbanizacion Consulta", "Urbanizacion Vendedor", "Urbanizacion Tecnico", "Urbanizacion Contabilidad"]]]},
+	{"dt": "Report", "filters": [["module", "=", "Urbanizacion"]]},
 ]
 
 # Apps
