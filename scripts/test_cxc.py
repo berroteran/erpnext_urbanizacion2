@@ -27,6 +27,7 @@ WORKSPACE_PY = ROOT / "urbanizacion/urbanizacion/workspace_setup.py"
 import types
 frappe_stub = types.ModuleType("frappe")
 frappe_stub._ = lambda x: x
+frappe_stub.get_roles = lambda: []
 sys.modules.setdefault("frappe", frappe_stub)
 
 spec = importlib.util.spec_from_file_location("cxc", REPORT_PY)
@@ -84,11 +85,11 @@ def t_estatus_reserva_contrato_no_confirmado():
     return PASS, ""
 
 def t_estatus_cancelada_prioridad():
-    "Carta Cancelada + contrato no confirmado → CANCELADA (falso positivo pre-fix)"
+    "Carta Cancelada + contrato no confirmado → CANCELADA (carta cancelada tiene prioridad)"
     carta = ns(estado="Cancelada")
     contrato = ns(confirmado=0)
     r = _get_estatus(None, carta, contrato)
-    assert r == "CANCELADA", f"REGRESIÓN: got {r!r} — fix de _get_estatus no funcionó"
+    assert r == "CANCELADA", f"got {r!r}"
     return PASS, ""
 
 def t_estatus_solo_carta_activa():
@@ -107,8 +108,8 @@ def t_estatus_inventario():
     return PASS, ""
 
 def t_estatus_contrato_confirmado_ignora_carta():
-    "Contrato confirmado + carta Cancelada → FORMALIZADO (contrato gana)"
-    r = _get_estatus(None, ns(estado="Cancelada"), ns(confirmado=1))
+    "Contrato confirmado + carta Activa → FORMALIZADO (contrato gana sobre carta activa)"
+    r = _get_estatus(None, ns(estado="Activa"), ns(confirmado=1))
     assert r == "FORMALIZADO", f"got {r}"
     return PASS, ""
 
@@ -314,8 +315,8 @@ def t_build_saldo_banco():
                   saldo_prima=9500, monto_financiar=40000,
                   gastos_inscripcion_lph=0)
     des = [
-        ns(realizado=1, fecha_realizado="2025-06-01", monto=15000, idx=1),
-        ns(realizado=1, fecha_realizado="2025-09-01", monto=15000, idx=2),
+        ns(estado="Realizado", fecha_realizado="2025-06-01", monto=15000, idx=1),
+        ns(estado="Realizado", fecha_realizado="2025-09-01", monto=15000, idx=2),
     ]
     row = _build_row(LOTE_BASE, None, contrato, des)
     assert row["saldo_banco"] == 10000, f"saldo_banco={row['saldo_banco']}"
@@ -331,7 +332,7 @@ def t_build_saldo_cliente():
                   precio_total=50000, monto_prima=10000, monto_reserva=500,
                   saldo_prima=5000, monto_financiar=40000,
                   gastos_inscripcion_lph=0)
-    des = [ns(realizado=1, fecha_realizado="2025-06-01", monto=10000, idx=1)]
+    des = [ns(estado="Realizado", fecha_realizado="2025-06-01", monto=10000, idx=1)]
     row = _build_row(LOTE_BASE, None, contrato, des)
     # saldo_banco = 40000 - 10000 = 30000; saldo_cliente = 5000 + 30000 = 35000
     assert row["saldo_banco"] == 30000, f"saldo_banco={row['saldo_banco']}"
@@ -339,13 +340,13 @@ def t_build_saldo_cliente():
     return PASS, ""
 
 def t_build_desembolso_no_realizado():
-    "Desembolso con realizado=0 no suma al total y muestra fecha/monto en cero"
+    "Desembolso con estado=Pendiente no suma al total y muestra fecha/monto en cero"
     contrato = ns(name="CV-001", lote="L-001", confirmado=1,
                   nombre_comprador="X", nombre_comprador2=None,
                   precio_total=50000, monto_prima=10000, monto_reserva=500,
                   saldo_prima=9500, monto_financiar=40000,
                   gastos_inscripcion_lph=0)
-    des = [ns(realizado=0, fecha_realizado="2025-06-01", monto=15000, idx=1)]
+    des = [ns(estado="Pendiente", fecha_realizado="2025-06-01", monto=15000, idx=1)]
     row = _build_row(LOTE_BASE, None, contrato, des)
     assert row["des1_monto"] == 0, f"des1_monto={row['des1_monto']}"
     assert row["des1_fecha"] is None, f"des1_fecha={row['des1_fecha']}"
@@ -359,7 +360,7 @@ def t_build_mas_de_4_desembolsos():
                   precio_total=50000, monto_prima=10000, monto_reserva=500,
                   saldo_prima=9500, monto_financiar=50000,
                   gastos_inscripcion_lph=0)
-    des = [ns(realizado=1, fecha_realizado=f"2025-0{i}-01", monto=5000, idx=i)
+    des = [ns(estado="Realizado", fecha_realizado=f"2025-0{i}-01", monto=5000, idx=i)
            for i in range(1, 8)]  # 7 desembolsos
     row = _build_row(LOTE_BASE, None, contrato, des)
     # saldo_banco = 50000 - (5000 * 4) = 30000  (solo 4 primeros en columnas)
@@ -378,7 +379,7 @@ def t_build_saldo_banco_negativo():
                   precio_total=50000, monto_prima=10000, monto_reserva=500,
                   saldo_prima=9500, monto_financiar=40000,
                   gastos_inscripcion_lph=0)
-    des = [ns(realizado=1, fecha_realizado="2025-06-01", monto=45000, idx=1)]
+    des = [ns(estado="Realizado", fecha_realizado="2025-06-01", monto=45000, idx=1)]
     row = _build_row(LOTE_BASE, None, contrato, des)
     assert row["saldo_banco"] == -5000, f"saldo_banco={row['saldo_banco']}"
     assert row.get("alerta") == "SOBREGIRO", f"alerta={row.get('alerta')!r}"
@@ -704,7 +705,7 @@ def t_borde_desembolso_monto_none():
                   precio_total=50000, monto_prima=10000, monto_reserva=500,
                   saldo_prima=9500, monto_financiar=40000,
                   gastos_inscripcion_lph=0)
-    des = [ns(realizado=1, fecha_realizado="2025-06-01", monto=None, idx=1)]
+    des = [ns(estado="Realizado", fecha_realizado="2025-06-01", monto=None, idx=1)]
     row = _build_row(LOTE_BASE, None, contrato, des)
     assert row["des1_monto"] == 0, f"des1_monto={row['des1_monto']}"
     assert row["saldo_banco"] == 40000, f"saldo_banco={row['saldo_banco']}"

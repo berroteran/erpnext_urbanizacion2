@@ -151,18 +151,19 @@ def get_data(filters):
 			desembolsos_por_contrato.setdefault(d.parent, []).append(d)
 
 	# 5. SeguimientoObra – most recent per lote (for construction progress)
-	# ORDER BY creation DESC (immutable) to avoid stale avance when old records are edited
+	# Subquery picks the row with MAX(creation) per lote to avoid fetching all rows
 	seguimientos_raw = frappe.db.sql("""
-		SELECT lote, porcentaje_avance
-		FROM `tabSeguimientoObra`
-		WHERE lote IN %s
-		ORDER BY creation DESC
+		SELECT so.lote, so.porcentaje_avance
+		FROM `tabSeguimientoObra` so
+		INNER JOIN (
+			SELECT lote, MAX(creation) AS max_creation
+			FROM `tabSeguimientoObra`
+			WHERE lote IN %s
+			GROUP BY lote
+		) latest ON so.lote = latest.lote AND so.creation = latest.max_creation
 	""", [lote_names], as_dict=True)
 
-	seguimiento_por_lote = {}
-	for s in seguimientos_raw:
-		if s.lote not in seguimiento_por_lote:
-			seguimiento_por_lote[s.lote] = s
+	seguimiento_por_lote = {s.lote: s for s in seguimientos_raw}
 
 	# 6. Build rows
 	estatus_filter = filters.get("estatus")
@@ -255,7 +256,7 @@ def _build_row(lote, carta, contrato, desembolsos, seguimiento=None, costo_m2=0)
 	saldo_cliente = saldo_prima + saldo_banco
 	alerta        = "SOBREGIRO" if saldo_banco < 0 else ""
 
-	return {
+	row = {
 		"idx":           0,
 		"cliente":        cliente,
 		"estatus":        estatus,
@@ -288,6 +289,9 @@ def _build_row(lote, carta, contrato, desembolsos, seguimiento=None, costo_m2=0)
 		"contrato":       contrato.name if contrato else "",
 		"carta_reserva":  carta.name if carta else "",
 	}
+	if not _can_see_gastos_lph():
+		row["gastos_lph"] = None
+	return row
 
 
 # ---------------------------------------------------------------------------
@@ -295,13 +299,12 @@ def _build_row(lote, carta, contrato, desembolsos, seguimiento=None, costo_m2=0)
 # ---------------------------------------------------------------------------
 
 def _get_estatus(lote, carta, contrato):
-	if contrato and contrato.confirmado:
-		return "FORMALIZADO"
-	# Un ContratoVenta abierto tiene prioridad sobre cualquier CartaReserva cancelada
-	if contrato and not contrato.confirmado:
-		return "RESERVA"
 	if carta and carta.estado == "Cancelada":
 		return "CANCELADA"
+	if contrato and contrato.confirmado:
+		return "FORMALIZADO"
+	if contrato and not contrato.confirmado:
+		return "RESERVA"
 	if carta and carta.estado == "Activa":
 		return "RESERVA"
 	return "INVENTARIO"
