@@ -10,9 +10,13 @@ def execute():
 	con estado en blanco y el reporte CXC los trataría como no realizados,
 	mostrando $0 y saldo_banco inflado al monto total de la línea de crédito.
 	"""
+	if not frappe.db.sql("SHOW COLUMNS FROM `taburbDesembolso` LIKE 'realizado'"):
+		return
+
 	frappe.db.sql("""
 		UPDATE `taburbDesembolso`
-		SET estado = 'Realizado'
+		SET estado = 'Realizado',
+		    fecha_realizado = COALESCE(NULLIF(fecha_realizado, ''), modified)
 		WHERE realizado = 1
 		  AND (estado IS NULL OR estado = '' OR estado != 'Realizado')
 	""")
