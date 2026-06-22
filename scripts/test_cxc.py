@@ -27,7 +27,7 @@ WORKSPACE_PY = ROOT / "urbanizacion/urbanizacion/workspace_setup.py"
 import types
 frappe_stub = types.ModuleType("frappe")
 frappe_stub._ = lambda x: x
-frappe_stub.get_roles = lambda: []
+frappe_stub.get_roles = lambda: ["Urbanizacion Manager"]
 sys.modules.setdefault("frappe", frappe_stub)
 
 spec = importlib.util.spec_from_file_location("cxc", REPORT_PY)
@@ -190,7 +190,7 @@ def t_build_fuente_contrato():
                   gastos_inscripcion_lph=0)
     carta = ns(name="CR-001", lote="L-001", banco="BAC", fecha="2025-01-10",
                estado="Activa", nombre_solicitante="Juan Pérez",
-               cr_precio=48000, monto_prima=9000, monto_reservacion=500,
+               cr_precio=48000, cr_precio_total=None, monto_prima=9000, monto_reservacion=500,
                saldo_neto_prima=8500, monto_financiar=38000)
     row = _build_row(LOTE_BASE, carta, contrato, [])
     assert row["precio_total"] == 50000, f"precio_total={row['precio_total']}"
@@ -291,12 +291,19 @@ def t_build_fallback_carta():
     "Sin contrato usa carta como fuente"
     carta = ns(name="CR-001", lote="L-001", banco="BANPRO", fecha="2025-03-01",
                estado="Activa", nombre_solicitante="Ana García",
-               cr_precio=47000, monto_prima=9000, monto_reservacion=400,
+               cr_precio=47000, cr_precio_total=None, monto_prima=9000, monto_reservacion=400,
                saldo_neto_prima=8600, monto_financiar=38000)
     row = _build_row(LOTE_BASE, carta, None, [])
     assert row["precio_total"] == 47000, f"precio_total={row['precio_total']}"
     assert row["cliente"] == "Ana García", f"got {row['cliente']!r}"
     assert row["banco"] == "BANPRO"
+    # precio_total toma precedencia sobre precio cuando ambos están presentes
+    carta2 = ns(name="CR-001", lote="L-001", banco="BANPRO", fecha="2025-03-01",
+                estado="Activa", nombre_solicitante="Ana García",
+                cr_precio=47000, cr_precio_total=50000, monto_prima=9000, monto_reservacion=400,
+                saldo_neto_prima=8600, monto_financiar=38000)
+    row2 = _build_row(LOTE_BASE, carta2, None, [])
+    assert row2["precio_total"] == 50000, f"cr_precio_total debe tener precedencia: {row2['precio_total']}"
     return PASS, ""
 
 def t_build_sin_datos():
@@ -446,26 +453,29 @@ def t_columns_link_tienen_options():
     return PASS, ""
 
 def t_columns_no_falta_campo_critico():
+    # x_ejecutar y costo_promedio son rol-condicionales; el stub usa Manager → deben aparecer
     cols = get_columns()
     nombres = {c["fieldname"] for c in cols}
     requeridos = {"precio_total", "saldo_banco", "saldo_cliente", "estatus",
                   "cliente", "banco", "contrato", "carta_reserva",
-                  "abonos_prima", "avance", "x_ejecutar"}
+                  "abonos_prima", "avance", "x_ejecutar", "costo_promedio"}
     faltantes = requeridos - nombres
     if faltantes:
         return FAIL, f"Campos críticos ausentes: {faltantes}"
     return PASS, ""
 
 def t_columns_nuevas_en_posicion_correcta():
-    "avance/x_ejecutar después de m2_casa; abonos_prima después de monto_reserva"
+    "avance/costo_promedio/x_ejecutar después de m2_casa; abonos_prima después de monto_reserva"
     cols = get_columns()
     nombres = [c["fieldname"] for c in cols]
     idx = {n: i for i, n in enumerate(nombres)}
     errores = []
     if not (idx.get("m2_casa", -1) < idx.get("avance", -1)):
         errores.append("avance debe ir después de m2_casa")
-    if not (idx.get("avance", -1) < idx.get("x_ejecutar", -1)):
-        errores.append("x_ejecutar debe ir después de avance")
+    if not (idx.get("avance", -1) < idx.get("costo_promedio", -1)):
+        errores.append("costo_promedio debe ir después de avance")
+    if not (idx.get("costo_promedio", -1) < idx.get("x_ejecutar", -1)):
+        errores.append("x_ejecutar debe ir después de costo_promedio")
     if not (idx.get("x_ejecutar", -1) < idx.get("precio_total", -1)):
         errores.append("precio_total debe ir después de x_ejecutar")
     if not (idx.get("monto_reserva", -1) < idx.get("abonos_prima", -1)):
@@ -476,11 +486,24 @@ def t_columns_nuevas_en_posicion_correcta():
         return FAIL, "\n".join(errores)
     return PASS, ""
 
+def t_columns_costos_ocultos_para_operador():
+    "Roles sin Manager/Contabilidad no deben ver costo_promedio ni x_ejecutar"
+    frappe_stub.get_roles = lambda: ["Urbanizacion Operador"]
+    try:
+        cols = get_columns()
+        nombres = {c["fieldname"] for c in cols}
+        if "costo_promedio" in nombres or "x_ejecutar" in nombres:
+            return FAIL, "costo_promedio/x_ejecutar visibles para Operador"
+        return PASS, ""
+    finally:
+        frappe_stub.get_roles = lambda: ["Urbanizacion Manager"]
+
 run("Todas las columnas Currency tienen options=USD", t_columns_currency_tienen_usd)
 run("fieldnames únicos (sin duplicados)", t_columns_fieldnames_unicos)
 run("Columnas Link tienen options (DocType apuntado)", t_columns_link_tienen_options)
 run("Campos críticos presentes en columnas", t_columns_no_falta_campo_critico)
 run("Nuevas columnas en posición correcta respecto al Excel", t_columns_nuevas_en_posicion_correcta)
+run("Costos ocultos para Operador (costo_m2 es permlevel=1)", t_columns_costos_ocultos_para_operador)
 
 # ---------------------------------------------------------------------------
 # BLOQUE 5 — workspace_setup: lógica idempotente (sin Frappe)
@@ -692,7 +715,7 @@ def t_borde_carta_banco_none():
                   saldo_prima=9500, monto_financiar=40000,
                   gastos_inscripcion_lph=0)
     carta = ns(name="CR-001", banco=None, fecha="2025-01-01", estado="Activa",
-               nombre_solicitante="X", cr_precio=48000, monto_prima=9000,
+               nombre_solicitante="X", cr_precio=48000, cr_precio_total=None, monto_prima=9000,
                monto_reservacion=400, saldo_neto_prima=8600, monto_financiar=38000)
     row = _build_row(LOTE_BASE, carta, contrato, [])
     assert row["banco"] == "", f"banco={row['banco']!r}"

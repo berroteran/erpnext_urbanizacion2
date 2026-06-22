@@ -7,14 +7,12 @@ def execute():
 	Toma Lotes.precio como fuente de verdad y recalcula precio_total,
 	monto_financiar y saldo_neto_prima con la misma lógica del Client Script.
 	"""
-	affected = frappe.db.get_all(
-		"CartaReserva",
-		filters={"precio": ["in", [0, None]], "lote": ["not in", ["", None]]},
-		fields=[
-			"name", "lote", "costo_adicional", "esquinero",
-			"descuento", "monto_prima", "monto_reservacion",
-		],
-	)
+	affected = frappe.db.sql("""
+		SELECT name, lote, costo_adicional, esquinero, descuento, monto_prima, monto_reservacion
+		FROM `tabCartaReserva`
+		WHERE (precio = 0 OR precio IS NULL)
+		  AND lote IS NOT NULL AND lote != ''
+	""", as_dict=True)
 
 	if not affected:
 		frappe.logger().info("fix_carta_reserva_precio_cero: sin registros afectados.")

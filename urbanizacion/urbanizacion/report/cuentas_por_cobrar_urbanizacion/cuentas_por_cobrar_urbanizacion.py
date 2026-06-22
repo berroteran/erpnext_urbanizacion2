@@ -28,8 +28,6 @@ def get_columns():
 		{"label": _("Bloque"),                 "fieldname": "bloque",         "fieldtype": "Data",         "width": 80},
 		{"label": _("M² Casa"),                "fieldname": "m2_casa",        "fieldtype": "Float",        "width": 80,  "precision": 2},
 		{"label": _("Avance Obra"),            "fieldname": "avance",         "fieldtype": "Percent",      "width": 100},
-		{"label": _("Costo Promedio"),         "fieldname": "costo_promedio", "fieldtype": "Currency",     "options": "USD", "width": 130},
-		{"label": _("Por Ejecutar"),           "fieldname": "x_ejecutar",     "fieldtype": "Currency",     "options": "USD", "width": 130},
 		{"label": _("Valor Venta"),            "fieldname": "precio_total",   "fieldtype": "Currency",     "options": "USD", "width": 130},
 		{"label": _("Banco"),                  "fieldname": "banco",          "fieldtype": "Data",         "width": 90},
 		{"label": _("Prima"),                  "fieldname": "monto_prima",    "fieldtype": "Currency",     "options": "USD", "width": 120},
@@ -52,8 +50,12 @@ def get_columns():
 		{"label": _("Contrato"),               "fieldname": "contrato",       "fieldtype": "Link",         "width": 145, "options": "ContratoVenta"},
 		{"label": _("Carta Reserva"),          "fieldname": "carta_reserva",  "fieldtype": "Link",         "width": 145, "options": "CartaReserva"},
 	]
+	# costo_m2 es permlevel=1 (solo Manager/Contabilidad); frappe.db.sql no aplica permlevel
+	if _can_see_costos():
+		idx = next(i for i, c in enumerate(cols) if c["fieldname"] == "avance")
+		cols.insert(idx + 1, {"label": _("Por Ejecutar"),   "fieldname": "x_ejecutar",     "fieldtype": "Currency", "options": "USD", "width": 130})
+		cols.insert(idx + 1, {"label": _("Costo Promedio"), "fieldname": "costo_promedio",  "fieldtype": "Currency", "options": "USD", "width": 130})
 	# gastos_lph es permlevel=1 (solo Contabilidad); se inserta después de linea_credito
-	# solo para roles autorizados; frappe.db.sql no aplica permlevel, así que filtramos aquí
 	if _can_see_gastos_lph():
 		idx = next(i for i, c in enumerate(cols) if c["fieldname"] == "linea_credito")
 		cols.insert(idx + 1, {
@@ -64,6 +66,11 @@ def get_columns():
 			"width": 145,
 		})
 	return cols
+
+
+def _can_see_costos():
+	roles = frappe.get_roles()
+	return "Urbanizacion Manager" in roles or "Urbanizacion Contabilidad" in roles or "System Manager" in roles
 
 
 def _can_see_gastos_lph():
@@ -106,7 +113,8 @@ def get_data(filters):
 			cr.name, cr.lote, cr.nombre_solicitante, cr.banco,
 			cr.monto_prima, cr.monto_reservacion, cr.saldo_neto_prima,
 			cr.monto_financiar, cr.estado, cr.fecha,
-			cr.precio AS cr_precio
+			cr.precio AS cr_precio,
+			cr.precio_total AS cr_precio_total
 		FROM `tabCartaReserva` cr
 		WHERE cr.lote IN %s
 		ORDER BY
@@ -213,7 +221,7 @@ def _build_row(lote, carta, contrato, desembolsos, seguimiento=None, costo_m2=0)
 		fecha_reserva = carta.fecha if carta else None
 	elif carta:
 		cliente       = carta.nombre_solicitante or ""
-		precio_total  = carta.cr_precio          or 0
+		precio_total  = carta.cr_precio_total or carta.cr_precio or 0
 		monto_prima   = carta.monto_prima        or 0
 		monto_reserva = carta.monto_reservacion  or 0
 		saldo_prima   = carta.saldo_neto_prima   or 0
@@ -289,6 +297,9 @@ def _build_row(lote, carta, contrato, desembolsos, seguimiento=None, costo_m2=0)
 		"contrato":       contrato.name if contrato else "",
 		"carta_reserva":  carta.name if carta else "",
 	}
+	if not _can_see_costos():
+		row["costo_promedio"] = None
+		row["x_ejecutar"] = None
 	if not _can_see_gastos_lph():
 		row["gastos_lph"] = None
 	return row
