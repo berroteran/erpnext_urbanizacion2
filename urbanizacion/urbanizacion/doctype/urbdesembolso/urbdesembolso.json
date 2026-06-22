@@ -4,7 +4,7 @@
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
- "field_order": ["porcentaje", "monto", "estado", "realizado", "fecha_realizado"],
+ "field_order": ["porcentaje", "monto", "estado", "fecha_realizado"],
  "fields": [
   {
    "columns": 2,
@@ -30,13 +30,6 @@
    "options": "Pendiente\nPor Solicitar\nProgramado\nRealizado"
   },
   {
-   "columns": 1,
-   "fieldname": "realizado",
-   "fieldtype": "Check",
-   "in_list_view": 1,
-   "label": "Realizado"
-  },
-  {
    "columns": 2,
    "fieldname": "fecha_realizado",
    "fieldtype": "Date",
@@ -46,7 +39,7 @@
  ],
  "istable": 1,
  "links": [],
- "modified": "2026-05-07 00:00:00.000000",
+ "modified": "2026-06-16 15:50:00.000000",
  "modified_by": "Administrator",
  "module": "Urbanizacion",
  "name": "urbDesembolso",

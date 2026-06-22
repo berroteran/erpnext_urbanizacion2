@@ -15,7 +15,8 @@ fixtures = [
 	{"dt": "Notification", "filters": [["document_type", "in", ["Proyectos","CatalogoModelos","ContratoVenta","CartaReserva","Lotes","Adendum","AdendumExtra","ActividadObra","FotoAvance","SeguimientoObra","CambioLote"]]]},
 	{"dt": "Print Format", "filters": [["doc_type", "in", ["Proyectos","CatalogoModelos","ContratoVenta","CartaReserva","Lotes","Adendum","AdendumExtra","ActividadObra","FotoAvance","SeguimientoObra","CambioLote"]]]},
 	{"dt": "Web Page", "filters": [["name", "=", "importar-lotes"]]},
-	{"dt": "Role", "filters": [["name", "in", ["Urbanizacion Manager", "Urbanizacion Operador", "Urbanizacion Consulta", "Urbanizacion Vendedor", "Urbanizacion Tecnico"]]]},
+	{"dt": "Role", "filters": [["name", "in", ["Urbanizacion Manager", "Urbanizacion Operador", "Urbanizacion Consulta", "Urbanizacion Vendedor", "Urbanizacion Tecnico", "Urbanizacion Contabilidad"]]]},
+	{"dt": "Report", "filters": [["name", "in", ["Cuentas por Cobrar Urbanizacion"]]]},
 ]
 
 # Apps
@@ -266,4 +267,7 @@ override_doctype_dashboards = {
 	"Lotes": "urbanizacion.urbanizacion.dashboard.lotes_dashboard.get_data",
 }
 
-after_migrate = ["urbanizacion.urbanizacion.doctype_link_guard.after_migrate"]
+after_migrate = [
+	"urbanizacion.urbanizacion.doctype_link_guard.after_migrate",
+	"urbanizacion.urbanizacion.workspace_setup.after_migrate",
+]
