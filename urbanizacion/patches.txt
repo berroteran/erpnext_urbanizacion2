@@ -14,5 +14,6 @@ urbanizacion.patches.v1_0.ensure_urbanizacion_page_access
 urbanizacion.patches.v1_0.set_urbanizacion_default_workspace
 urbanizacion.patches.v1_0.fix_carta_reserva_precio_cero
 urbanizacion.patches.v1_0.backfill_desembolso_estado
+urbanizacion.patches.v1_0.sync_custom_docperm_from_doctype
 
 # Patches added in this section will be executed after doctypes are migrated

@@ -269,5 +269,6 @@ override_doctype_dashboards = {
 
 after_migrate = [
 	"urbanizacion.urbanizacion.doctype_link_guard.after_migrate",
+	"urbanizacion.urbanizacion.permission_sync.after_migrate",
 	"urbanizacion.urbanizacion.workspace_setup.after_migrate",
 ]
